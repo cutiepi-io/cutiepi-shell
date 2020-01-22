@@ -1,0 +1,12 @@
+[Unit]
+Description=CutiePi Shell
+After=systemd-user-sessions.service
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi
+ExecStart=/opt/cutiepi-shell/start.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
