@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg xmlns:cc='http://creativecommons.org/ns#' xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape' xmlns:svg='http://www.w3.org/2000/svg' id='svg7384' version='1.1' height='16' xmlns:dc='http://purl.org/dc/elements/1.1/' xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns='http://www.w3.org/2000/svg' width='16'>
+  <title id='title9167'>Gnome Symbolic Icon Theme</title>
+  <metadata id='metadata90'>
+    <rdf:RDF>
+      <cc:Work rdf:about=''>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource='http://purl.org/dc/dcmitype/StillImage'/>
+        <dc:title>Gnome Symbolic Icon Theme</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs id='defs7386'>
+    <clipPath id='clipPath6279-6-1'>
+      <rect x='26.85' y='220.75' id='rect6281-3-1' height='6.3750005' width='3.8250003' style='color:#bebebe;fill:#bebebe;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible'/>
+    </clipPath>
+    <clipPath id='clipPath6265-33-4'>
+      <rect x='26.96591' y='221.32954' id='rect6267-6-5' height='5.21591' width='2.8977277' style='color:#bebebe;fill:#bebebe;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible'/>
+    </clipPath>
+    <clipPath id='clipPath6259-6-4'>
+      <rect x='26.998718' y='221.50153' id='rect6261-4-9' height='4.8734746' width='1.8762827' style='color:#bebebe;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible'/>
+    </clipPath>
+  </defs>
+  <g transform='translate(-41.0002,-177)' id='layer9' style='display:inline'>
+    <path transform='matrix(0,-0.784314,0.784314,0,-127.1368,208.059)' inkscape:connector-curvature='0' d='m 26.9375,220.40625 a 1.2751275,1.2751275 0 0 0 -0.65625,2.1875 c 0.757556,0.75756 0.757556,1.92994 0,2.6875 a 1.281631,1.281631 0 1 0 1.8125,1.8125 c 1.732036,-1.73204 1.732036,-4.58046 0,-6.3125 a 1.2751275,1.2751275 0 0 0 -1.15625,-0.375 z' clip-path='url(#clipPath6279-6-1)' id='path2933' style='font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:2.54999995;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans'/>
+    <path transform='matrix(0,-1.72549,1.72549,0,-337.9018,231.529)' inkscape:connector-curvature='0' d='m 27.125,221.09375 a 0.57960298,0.57960298 0 0 0 -0.34375,1 c 1.023324,1.02332 1.023324,2.66418 0,3.6875 a 0.57960298,0.57960298 0 1 0 0.8125,0.8125 c 1.466269,-1.46627 1.466269,-3.84623 0,-5.3125 a 0.57960298,0.57960298 0 0 0 -0.46875,-0.1875 z' clip-path='url(#clipPath6265-33-4)' id='path2935' style='font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:1.15909004;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans'/>
+    <path transform='matrix(0,-2.66667,2.66667,0,-548.6658,255)' inkscape:connector-curvature='0' d='m 27.0625,221.3125 a 0.3750375,0.3750375 0 0 0 -0.125,0.625 c 1.10149,1.10149 1.10149,2.89851 0,4 a 0.37565048,0.37565048 0 1 0 0.53125,0.53125 c 1.388102,-1.3881 1.388102,-3.6744 0,-5.0625 a 0.3750375,0.3750375 0 0 0 -0.40625,-0.0937 z' clip-path='url(#clipPath6259-6-4)' id='path2937' style='font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:0.75;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans'/>
+    
+    <path transform='matrix(1.5,0,0,1.5,6.5002,-124)' d='m 29,209 a 1,1 0 1 1 -2,0 1,1 0 1 1 2,0 z' id='path2948' style='fill:#bebebe;fill-opacity:1;stroke:none;display:inline'/>
+  </g>
+  <g transform='translate(-41.0002,-177)' id='layer10'/>
+  <g transform='translate(-41.0002,-177)' id='layer11'/>
+  <g transform='translate(-41.0002,-177)' id='layer12'/>
+  <g transform='translate(-41.0002,-177)' id='layer13'/>
+  <g transform='translate(-41.0002,-177)' id='layer14'/>
+  <g transform='translate(-41.0002,-177)' id='layer15'/>
+</svg>
