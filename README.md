@@ -33,12 +33,9 @@ Cutiepi shell is written entirely in Qt, and can be ported to Wayland or any pla
 
 ## License 
 
-* CutiePi shell source code are licensed under the terms of the GNU General Public License version 3 or, at your option, any later version. 
-* And all documentation is licensed under a Creative Commons BY-SA 4.0 international license. 
-* This project also uses [Font Awesome](https://fontawesome.com/license/free) fonts, which is licensed under `SIL OFL 1.1 License`. 
+* CutiePi shell sources are licensed under the terms of the GNU General Public License version 3 or, at your option, any later version. 
+* And all documentations are licensed under a Creative Commons BY-SA 4.0 international license. 
+* This project uses [Font Awesome](https://fontawesome.com/license/free) fonts, which is licensed under `SIL OFL 1.1 License`. 
 
-Icon assets are from the `gnome-user-docs` package with following license and copyright information: 
-
-    Copyright: Copyright (C) 2010 - 2014 Shaun McCance
-    License: CC-BY-3.0
+* Icons are from the `gnome-user-docs` package with following copyright information `Copyright: Copyright (C) 2010 - 2014 Shaun McCance`, and licensed under `CC-BY-3.0`. 
 
