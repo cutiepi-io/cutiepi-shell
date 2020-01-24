@@ -4,7 +4,7 @@ A mobile UI for Raspberry Pi and Raspbian OS.
 
 ![](screenshots/cutiepi-shell-heroshot.png)
 
-CutiePi shell is built for the open source [CutiePi tablet](https://cutiepi.io) project.
+CutiePi shell is built for the open source [CutiePi tablet](https://cutiepi.io) project. Check out the [demo video](https://www.youtube.com/watch?v=ivkR3tvci1Q) 
 
 ## Features
 
