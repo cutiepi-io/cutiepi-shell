@@ -162,6 +162,7 @@ KeyboardLayout {
         BaseKey {
             functionKey: true
             key: Qt.Key_Up
+            repeat: true
             weight: 150
             keyPanelDelegate: KeyPanel {
                 Rectangle {
@@ -213,6 +214,7 @@ KeyboardLayout {
         BaseKey {
             functionKey: true
             key: Qt.Key_Left
+            repeat: true
             weight: 150
             keyPanelDelegate: KeyPanel {
                 Rectangle {
@@ -240,6 +242,7 @@ KeyboardLayout {
         BaseKey {
             functionKey: true
             key: Qt.Key_Down
+            repeat: true
             weight: 150
             keyPanelDelegate: KeyPanel {
                 Rectangle {
@@ -267,6 +270,7 @@ KeyboardLayout {
         BaseKey {
             functionKey: true
             key: Qt.Key_Right
+            repeat: true
             weight: 150
             keyPanelDelegate: KeyPanel {
                 Rectangle {
