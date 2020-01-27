@@ -361,6 +361,8 @@ Item {
                     anchors.topMargin: 85 // FIXME: should use navigator bar item
                     profile: WebEngineProfile {
                         httpUserAgent: Tab.UserAgent
+                        storageName: "Profile"
+                        offTheRecord: false
                     }
                     onLoadingChanged: { 
                         urlText.text = Tab.itemMap[currentTab].url;
