@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
 export QT_QPA_PLATFORM=eglfs
 export QT_IM_MODULE=qtvirtualkeyboard
 export QT_VIRTUALKEYBOARD_LAYOUT_PATH=/opt/cutiepi-shell/layouts/
