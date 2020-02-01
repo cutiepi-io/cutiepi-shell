@@ -4,7 +4,6 @@ var DrawerHeight = 40;
 var DrawerMargin = 10;
 var HomePage = "https://duckduckgo.com";
 var RandomString = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-var UserAgent = "Mozilla/5.0 (X11; CrOS armv7l 10895.56.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.102 Safari/537.36";
 
 function openNewTab(pageid, url) {
     //console.log("openNewTab: "+ pageid + ', currentTab: ' + currentTab);

@@ -354,16 +354,7 @@ Item {
             } 
             Component {
                 id: tabWebView
-                WebEngineView { 
-                    anchors { top: parent.top; left: parent.left; right: parent.right; }
-                    anchors.bottom: inputPanel.top 
-                    z: 2 // for drawer open/close control  
-                    anchors.topMargin: 85 // FIXME: should use navigator bar item
-                    profile: WebEngineProfile {
-                        httpUserAgent: Tab.UserAgent
-                        storageName: "Profile"
-                        offTheRecord: false
-                    }
+                WebView { 
                     onLoadingChanged: { 
                         urlText.text = Tab.itemMap[currentTab].url;
                         if (loadRequest.status == WebEngineView.LoadSucceededStatus) {
