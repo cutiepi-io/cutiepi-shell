@@ -361,6 +361,13 @@ Item {
                             Tab.updateHistory(Tab.itemMap[currentTab].url, Tab.itemMap[currentTab].title, Tab.itemMap[currentTab].icon)
                         }
                     }
+                    onOpenTab: {
+                        Tab.loadUrl(url);
+                    }
+                    onOpenNewTab: {
+                        tabBounce.start();
+                        Tab.openNewTab("page-"+Tab.salt(), url); 
+                    }
                 }
             }
             Component {
