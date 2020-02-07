@@ -46,7 +46,12 @@ WaylandOutput {
 
     onOrientationChanged: {
         var i = sidebar.tabListView.currentIndex;
-        shellSurfaces.get(i).shellSurface.sendConfigure(Qt.size(view.height, view.width), WlShellSurface.NoneEdge);
+        var surface = shellSurfaces.get(i).shellSurface;
+        if (surface.toString().match(/XWaylandShellSurface/)) { 
+            surface.sendResize(Qt.size(view.height - 85, view.width));
+        } else { 
+            surface.sendConfigure(Qt.size(view.height, view.width), WlShellSurface.NoneEdge);
+        }
     }
 
     Item {

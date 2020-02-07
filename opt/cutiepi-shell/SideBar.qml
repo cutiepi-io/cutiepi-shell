@@ -66,7 +66,11 @@ Rectangle {
         anchors.fill: parent
 
         onCurrentIndexChanged: {
-            shellSurfaces.get(currentIndex).shellSurface.sendConfigure(Qt.size(view.width, view.height), WlShellSurface.NoneEdge);
+            if (shellSurfaces.get(currentIndex).shellSurface.toString().match(/XWaylandShellSurface/)) { 
+                shellSurfaces.get(currentIndex).shellSurface.sendResize(Qt.size(view.width, view.height - 85));
+            } else { 
+                shellSurfaces.get(currentIndex).shellSurface.sendConfigure(Qt.size(view.width, view.height), WlShellSurface.NoneEdge);
+            }
         }
 
         header: Rectangle { 
