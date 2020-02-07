@@ -6,5 +6,5 @@ ShellSurfaceItem {
     sizeFollowsSurface: false
     shellSurface: modelData
     onSurfaceDestroyed: shellSurfaces.remove(index)
-    visible: sidebar.tabListView.currentIndex == index                     
+    visible: sidebar.tabListView.currentIndex == index
 }

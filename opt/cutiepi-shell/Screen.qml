@@ -30,7 +30,7 @@ WaylandOutput {
     property int drawerHeight: 40 
 
     function handleShellSurface(shellSurface) {
-        shellSurfaces.append({shellSurface: shellSurface});
+        shellSurfaces.insert(0, {shellSurface: shellSurface});
     }
 
     onScreenLockedChanged: {
@@ -42,6 +42,11 @@ WaylandOutput {
             process.start("raspi-gpio", ["set", "12", "dh"]);
             lockscreen.lockscreenMosueArea.enabled = true; 
         }
+    }
+
+    onOrientationChanged: {
+        var i = sidebar.tabListView.currentIndex;
+        shellSurfaces.get(i).shellSurface.sendConfigure(Qt.size(view.height, view.width), WlShellSurface.NoneEdge);
     }
 
     Item {

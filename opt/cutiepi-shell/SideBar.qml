@@ -1,4 +1,5 @@
 import QtQuick 2.14
+import QtWayland.Compositor 1.14
 
 Rectangle {
     id: sidebar  
@@ -63,6 +64,10 @@ Rectangle {
     ListView {
         id: tabListView
         anchors.fill: parent
+
+        onCurrentIndexChanged: {
+            shellSurfaces.get(currentIndex).shellSurface.sendConfigure(Qt.size(view.width, view.height), WlShellSurface.NoneEdge);
+        }
 
         header: Rectangle { 
             width: drawerWidth
