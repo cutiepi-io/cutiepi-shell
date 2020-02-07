@@ -19,7 +19,7 @@ Rectangle {
                 color: "transparent"
                 Image { 
                     height: 24; width: 24; 
-                    source: "icons/favicon.png";
+                    source: "icons/favicon.png"; // FIXME 
                     anchors { left: parent.left; margins: drawerMargin; verticalCenter: parent.verticalCenter} 
                 }
                 Text { 

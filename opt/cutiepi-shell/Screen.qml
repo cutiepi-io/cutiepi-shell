@@ -196,7 +196,36 @@ WaylandOutput {
                         top: parent.top
                         right: parent.right
                     }
+                }
 
+                MouseArea { 
+                    id: overlayMouseArea 
+                    anchors.fill: parent 
+                    z: 3
+                    enabled: (root.state == "setting" || root.state == "popup" || root.state == "drawer" )
+                    onClicked: { 
+                        if ( root.state == "setting" || root.state == "drawer") 
+                            root.state = "normal"
+                    }
+                }
+
+                Rectangle { 
+                    width: 10; height: 10; color: "#2E3440"; z: 2; anchors { top: parent.top; right: setting.left } 
+                }
+                Rectangle { 
+                    width: 24; height: 24; color: "#ECEFF4"; radius: 12; z: 3; anchors { top: parent.top; right: setting.left }
+                }
+                Rectangle { 
+                    width: setting.width - 20; height: 65 + 25; color: "#2E3440"; z: 3 
+                    anchors { top: parent.top; right: parent.right; topMargin: -25 } radius: 22 
+                }
+
+                Rectangle {
+                    color: "transparent"
+                    width: 85 
+                    height: 85
+                    anchors { top: parent.top; left: parent.left }
+                    z: 3 
                     // hamburger button 
                     Text {
                         id: hamburgerButton
@@ -217,28 +246,6 @@ WaylandOutput {
                             }
                         }
                     }
-                }
-
-                MouseArea { 
-                    id: overlayMouseArea 
-                    anchors.fill: parent 
-                    z: 3
-                    enabled: (root.state == "setting" || root.state == "popup" || root.state == "drawer" )
-                    onClicked: { 
-                        if ( root.state == "setting" || root.state == "drawer") 
-                            root.state = "normal"
-                    }
-                }
-
-                Rectangle { 
-                    width: 10; height: 10; color: "#2E3440"; anchors { top: parent.top; right: setting.left }
-                }
-                Rectangle { 
-                    width: 24; height: 24; color: "#ECEFF4"; radius: 12; anchors { top: parent.top; right: setting.left }
-                }
-                Rectangle { 
-                    width: setting.width - 20; height: 65 + 25; color: "#2E3440"; 
-                    anchors { top: parent.top; right: parent.right; topMargin: -25 } radius: 22 
                 }
 
                 SettingSheet { id: settingSheet } 

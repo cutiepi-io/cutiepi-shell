@@ -8,4 +8,4 @@ export QT_WAYLAND_CLIENT_BUFFER_INTEGRATION=wayland-egl
 export XDG_RUNTIME_DIR=$HOME/.xdg
 unset QT_IM_MODULE
 
-/opt/qt5/bin/qmlscene term.qml &
+/opt/qt5/bin/qmlscene /opt/cutiepi-shell/apps/term.qml &

@@ -4,13 +4,14 @@ import Yat 1.0 as Yat
 
 Window {
     title: "Terminal"
-    width: view.width
-    height: view.height 
+    width: 800
+    height: 1280
     visible: true
 
 	Yat.Screen { 
 		id: terminal
 		anchors.fill: parent 
+		anchors.topMargin: 85 
 		font.pointSize: 12
 	}
 }
