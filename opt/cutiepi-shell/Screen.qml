@@ -1,6 +1,7 @@
 import QtQuick 2.14
 import QtQuick.Window 2.2
 import QtWayland.Compositor 1.14
+import Liri.XWayland 1.0 as LXW
 
 import QtQuick.Controls 2.1
 import QtSensors 5.11
@@ -248,7 +249,8 @@ WaylandOutput {
                 model: shellSurfaces
                 delegate: Component {
                     Loader {
-                        source: "WaylandChrome.qml" 
+                        source: ( modelData.toString().match(/XWaylandShellSurface/) ) ? 
+                            "XWaylandChrome.qml" : "WaylandChrome.qml" 
                     }
                 }
             }

@@ -17,6 +17,7 @@
 
 import QtQuick 2.14
 import QtWayland.Compositor 1.14
+import Liri.XWayland 1.0 as LXW
 
 WaylandCompositor {
     Screen { id: screen }
@@ -25,6 +26,28 @@ WaylandCompositor {
             screen.handleShellSurface(shellSurface)
         }
     }
+
+    Component.onCompleted: xwayland.startServer();
+
+    LXW.XWayland {
+        id: xwayland
+        enabled: true
+        manager: LXW.XWaylandManager {
+            id: manager
+            onShellSurfaceRequested: { 
+                var shellSurface = shellSurfaceComponent.createObject(manager);
+                shellSurface.initialize(manager, window, geometry, overrideRedirect, parentShellSurface);
+            }
+            onShellSurfaceCreated: {
+                screen.handleShellSurface(shellSurface)
+            }
+        }
+        Component {
+            id: shellSurfaceComponent
+            LXW.XWaylandShellSurface {}
+        }
+    }
+
     ListModel { id: shellSurfaces }
     TextInputManager {}
 }
