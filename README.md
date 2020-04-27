@@ -4,18 +4,18 @@ A mobile UI for Raspberry Pi and Raspbian OS.
 
 ![](screenshots/cutiepi-shell-heroshot.png)
 
-CutiePi shell is built for the open source [CutiePi tablet](https://cutiepi.io) project. Check out the [demo video](https://www.youtube.com/watch?v=ivkR3tvci1Q) 
+CutiePi shell is a mobile UI built for [CutiePi tablet](https://cutiepi.io) project. Check out the [demo video](https://www.youtube.com/watch?v=ivkR3tvci1Q) 
 
 ## Features
 
-* Lockscreen with sleep/wake button
+* Lockscreen with sleep/wake button events handling 
 * Built-in web browser, terminal emulator, and on-screen keyboard 
-* Side-tab layout for multitasking 
-* WiFi configuraton 
-* Battery charging status and level reading (through STM32 MCU)
-* Orientation sensor support 
+* Side-tab for multitasking 
+* WiFi configurator 
+* Battery charging status and level reading (through UART) 
+* Orientation sensor support (accelerometer and gyroscope) 
 
-Cutiepi shell is written entirely in Qt, and can be ported to Wayland or any platform with EGL support.
+Cutiepi shell is written entirely in Qt using EGLFS QPA, and can be ported to [Wayland](https://github.com/cutiepi-io/cutiepi-shell/tree/wayland) or other platform and distributions with EGL support.
 
 ### Screenshots 
 
@@ -25,11 +25,11 @@ Cutiepi shell is written entirely in Qt, and can be ported to Wayland or any pla
 
 ## Dependencies 
 
-- [Qt](http://download.qt.io/official_releases/qt/5.12/) `5.12.5`
-- [Yat](https://github.com/jorgen/yat) for terminal emulator
-- [libconnman-qt](https://git.sailfishos.org/mer-core/libconnman-qt) and [ConnMan](https://01.org/connman) `1.37` for WiFi configurator
+- [Qt](http://download.qt.io/official_releases/qt/5.12/) `5.12` or later version 
+- [Yat](https://github.com/jorgen/yat) for terminal emulator 
+- [libconnman-qt](https://git.sailfishos.org/mer-core/libconnman-qt) and [ConnMan](https://01.org/connman) `1.37` for WiFi configuration 
 - [CutiePi firmware](https://github.com/cutiepi-io/cutiepi-firmware) and [middleware plugins](https://github.com/cutiepi-io/cutiepi-middleware) for battery and sleep/wake button related functions 
-- [QtMpu6050](https://github.com/cutiepi-io/QtMpu6050) QtSensors plugin
+- [QtMpu6050](https://github.com/cutiepi-io/QtMpu6050) for QtSensors plugin support (optional) 
 
 ## License 
 
