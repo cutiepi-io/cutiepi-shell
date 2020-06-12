@@ -1,6 +1,6 @@
 ## CutiePi shell
 
-A mobile UI for Raspberry Pi and Raspbian OS.
+A mobile UI for Raspberry Pi OS.
 
 ![](screenshots/cutiepi-shell-heroshot.png)
 
