@@ -1,6 +1,6 @@
 /*
-    Copyright (C) 2019-2020 Ping-Hsun "penk" Chen
-    Copyright (C) 2020 Chouaib Hamrouche
+    Copyright (C) 2021 Penk Chen
+    Copyright (C) 2021 Chouaib Hamrouche
 
     Contact: hello@cutiepi.io
 
@@ -21,7 +21,7 @@
 
 */
 
-import QtQuick 2.12
+import QtQuick 2.15
 import QtQuick.Controls 2.1
 import QtWebEngine 1.7
 import QtQuick.VirtualKeyboard 2.2
@@ -54,8 +54,16 @@ Item {
     property real pitch: 0.0
     property real roll: 0.0
     readonly property double radians_to_degrees: 180 / Math.PI
-    property variant orientation: 270 
+
+    property variant orientation: 270
+    property variant portraitMode: (orientation === 180 || orientation === 0)
     property variant sensorEnabled: true 
+    property variant keyboardPosition: { 
+        '270': { x: -40, y: 440, hidden_x: 360, hidden_y: 440 }, 
+        '180': { x: 0,  y: 0, hidden_x: 0, hidden_y: -250 }, 
+        '90': { x: -440, y: 440, hidden_x: -840, hidden_y: 440 }, 
+        '0': { x: 0, y: 1030, hidden_x: 0, hidden_y: 1280 } 
+    } 
 
     property string currentTab: ""
     property bool hasTabOpen: (tabModel.count !== 0) && (typeof(Tab.itemMap[currentTab]) !== "undefined")
@@ -210,8 +218,8 @@ Item {
     Rectangle {
         id: view
         color: '#2E3440'
-        width: (orientation == 180 || orientation == 0) ? 800 : 1280
-        height: (orientation == 180 || orientation == 0) ? 1280 : 800 
+        width: root.portraitMode ? 800 : 1280
+        height: root.portraitMode ? 1280 : 800 
 
         FontLoader {
             id: icon
@@ -219,8 +227,8 @@ Item {
         }
 
         // control the rotation of view 
-        x: (orientation == 180 || orientation == 0) ? 0 : -240 
-        y: (orientation == 180 || orientation == 0) ? 0 : 240
+        x: root.portraitMode ? 0 : -240
+        y: root.portraitMode ? 0 : 240
         rotation: orientation
         Behavior on rotation {
             //NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
@@ -560,7 +568,7 @@ Item {
                 id: urlProgressBar 
                 height: 4
                 visible: (hasTabOpen && Tab.itemMap[currentTab].loadProgress < 100)
-                width: parent.width * (Tab.itemMap[currentTab].loadProgress/100)
+                width: (typeof(Tab.itemMap[currentTab]) !== "undefined") ? parent.width * (Tab.itemMap[currentTab].loadProgress/100) : 0
                 anchors { bottom: naviBar.bottom; left: parent.left }
                 color: "#bf616a" 
             }
@@ -768,7 +776,7 @@ Item {
                     model: networkingModel
                     delegate: Rectangle {
                         height: 45
-                        width: parent.width 
+                        width: visible ? parent.width : 0
                         color: 'transparent' 
                         Row {
                             width: parent.width - 40 
@@ -1064,15 +1072,18 @@ Item {
             InputPanel {
                 id: inputPanel
                 z: 89
-                y: parent.height
-                anchors.left: parent.left
-                anchors.right: parent.right
+                x: keyboardPosition[root.orientation].hidden_x
+                y: keyboardPosition[root.orientation].hidden_y
+                width: root.portraitMode ? 800 : 1280
+                rotation: root.orientation
+
                 states: State {
                     name: "visible"
                     when: inputPanel.active && root.state != "locked"
                     PropertyChanges {
                         target: inputPanel
-                        y: parent.height - inputPanel.height
+                        x: keyboardPosition[root.orientation].x
+                        y: keyboardPosition[root.orientation].y
                     }
                 }
                 transitions: Transition {
@@ -1082,6 +1093,11 @@ Item {
                     reversible: true
                     enabled: !VirtualKeyboardSettings.fullScreenMode
                     ParallelAnimation {
+		                NumberAnimation {
+                            properties: "x"
+                            duration: 250
+                            easing.type: Easing.InOutQuad
+                        }
                         NumberAnimation {
                             properties: "y"
                             duration: 250
@@ -1094,7 +1110,6 @@ Item {
                     property: "animating"
                     value: inputPanelTransition.running
                 }
-                AutoScroller {}
             }
 
             // lockscreen 
