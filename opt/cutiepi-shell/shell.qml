@@ -48,6 +48,8 @@ Item {
     property variant batteryPercentage: ""
     property variant queue: []
     property bool screenLocked: false
+    property bool switchoffScreen: false
+
     property bool batteryCharging: false
     property variant wallpaperUrl: "file:///usr/share/rpd-wallpaper/temple.jpg" 
 
@@ -81,10 +83,15 @@ Item {
         if (screenLocked) {
             turnScreenOff();
             root.state = "locked";
-            lockscreenMosueArea.enabled = false; 
         } else {
             turnScreenOn();
-            lockscreenMosueArea.enabled = true; 
+        }
+    }
+    onSwitchoffScreenChanged: {
+        if (switchoffScreen) {
+            root.state = "switchoff";
+        } else {
+            root.state = "normal"
         }
     }
 
@@ -153,7 +160,10 @@ Item {
               '3.62': 30, '3.60': 25, '3.58': 20, '3.545': 15, '3.51': 10, '3.42': 5, '3.00': 0 }
 
         onButtonChanged: {
-            screenLocked = !screenLocked
+	    if (button == 1)
+            screenLocked = !screenLocked;
+	    if (button == 3)
+            switchoffScreen = true;
         }
         onBatteryChanged: {
             if (battery > 5) { 
@@ -1132,6 +1142,7 @@ Item {
                 MouseArea {
                     id: lockscreenMosueArea
                     anchors.fill: parent 
+                    enabled: !screenLocked
                     onEnabledChanged: {
                         if (enabled && root.state == "locked" ) { idleTimer.start() }
                     }
@@ -1158,6 +1169,7 @@ Item {
                 }
             }
 
+            PowerOffMenu { id: switchOff }
         } // end of content  
 
         // notification
@@ -1245,6 +1257,7 @@ Item {
         },
         State { name: "locked" }, 
         State { name: "popup" }, 
+        State { name: "switchoff" }, 
         State{
             name: "drawer"
             PropertyChanges { target: content; anchors.leftMargin: Tab.DrawerWidth }
