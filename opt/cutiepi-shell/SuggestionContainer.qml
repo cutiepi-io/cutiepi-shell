@@ -44,7 +44,7 @@ Item {
                 Rectangle { 
                     color: "transparent"
                     height: 50 
-                    width: parent.width 
+                    width: historyListView.visible ? historyListView.width : 0
                     Text {                          
                         anchors {                       
                             top: parent.top; left: parent.left; right: parent.right
