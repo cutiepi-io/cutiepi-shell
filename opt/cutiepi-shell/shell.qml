@@ -73,13 +73,17 @@ Item {
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
+
+    function turnScreenOn() { process.start("raspi-gpio", ["set", "12", "dh"]); }
+    function turnScreenOff() { process.start("raspi-gpio", ["set", "12", "dl"]); }
+
     onScreenLockedChanged: {
         if (screenLocked) {
-            process.start("raspi-gpio", ["set", "12", "dl"]);
+            turnScreenOff();
             root.state = "locked";
             lockscreenMosueArea.enabled = false; 
         } else {
-            process.start("raspi-gpio", ["set", "12", "dh"]);
+            turnScreenOn();
             lockscreenMosueArea.enabled = true; 
         }
     }
@@ -231,7 +235,7 @@ Item {
         y: root.portraitMode ? 0 : 240
         rotation: orientation
         Behavior on rotation {
-            //NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
+            RotationAnimator { duration: 150; easing.type: Easing.InOutQuad; direction: RotationAnimator.Shortest }
         }
 
         Rectangle {
@@ -776,7 +780,7 @@ Item {
                     model: networkingModel
                     delegate: Rectangle {
                         height: 45
-                        width: visible ? parent.width : 0
+                        width: wifiListView.visible ? wifiListView.width : 0
                         color: 'transparent' 
                         Row {
                             width: parent.width - 40 
@@ -831,6 +835,7 @@ Item {
                                 else if (modelData.strength >= 50 ) { return "icons/network-wireless-signal-good-symbolic.svg" }
                                 else if (modelData.strength >= 45 ) { return "icons/network-wireless-signal-ok-symbolic.svg" }
                                 else if (modelData.strength >= 30 ) { return "icons/network-wireless-signal-weak-symbolic.svg" }
+                                else { return "icons/network-wireless-signal-none-symbolic.svg" }
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
@@ -1123,10 +1128,18 @@ Item {
                 MouseArea {
                     id: lockscreenMosueArea
                     anchors.fill: parent 
+                    onEnabledChanged: {
+                        if (enabled && root.state == "locked" ) { idleTimer.start() }
+                    }
                     drag.target: lockscreen; drag.axis: Drag.YAxis; drag.maximumY: 0
                     onReleased: { 
                         if (lockscreen.y > -480) { bounce.restart(); } else { root.state = "normal"; lockscreen.y = 0; } 
                     } 
+                }
+                Timer {
+                    id: idleTimer
+                    running: false; interval: 5000;
+                    onTriggered: { if (root.state == "locked") screenLocked = true; } // dim the screen after 5s idle 
                 }
                 NumberAnimation { id: bounce; target: lockscreen; properties: "y"; to: 0; easing.type: Easing.InOutQuad; duration: 200 }
                 Text { 
@@ -1151,6 +1164,7 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: 300
             y: -160
+            visible: y <= 0
             Rectangle {
                 id: notificationContainer
                 width: 480
@@ -1204,7 +1218,7 @@ Item {
         }
         DropShadow {
             z: 10
-            visible: true
+            visible: notification.visible
             anchors.fill: source
             cached: true;
             horizontalOffset: 3;
