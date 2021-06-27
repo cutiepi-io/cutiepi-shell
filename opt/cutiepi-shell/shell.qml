@@ -183,7 +183,7 @@ Item {
     Accelerometer {
         id: accel
         active: sensorEnabled
-        dataRate: 100
+        dataRate: 30
         onReadingChanged: {
             var accX = accel.reading.x
             var accY = accel.reading.y - 2 //experimental calibration
@@ -195,22 +195,26 @@ Item {
             pitch = pitch * 0.98 + pitchAcc * 0.02;
             roll = roll * 0.98 + rollAcc * 0.02;
             
+            var tmp = orientation;
+
             //update orientation
             if(pitch >= 30.0)
-                orientation = 0
+                tmp = 0
             else if(pitch <= -30.0)
-                orientation = 180
+                tmp = 180
             if(roll >= 30.0)
-                orientation = 270
+                tmp = 270
             else if(roll <= -30.0)
-                orientation = 90 
+                tmp = 90 
+
+            orientation = tmp;
         }
     }
 
     Gyroscope {
         id: gyro
         active: sensorEnabled
-        dataRate: 100
+        dataRate: 30
         onReadingChanged: {
             //integrate gyro rates to update angles (pitch and roll)
             var dt=0.01 //10ms
