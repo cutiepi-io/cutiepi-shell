@@ -23,6 +23,8 @@
 
 import QtQuick 2.15
 import QtQuick.Controls 2.1
+import QtMultimedia 5.15 
+
 import QtWebEngine 1.7
 import QtQuick.VirtualKeyboard 2.2
 import QtQuick.VirtualKeyboard.Settings 2.2
@@ -189,6 +191,13 @@ Item {
                 if (battery == 5) batteryCharging = false 
             }
         }
+    }
+
+    SoundEffect {
+        id: dockingSoundEffect
+        source: batteryCharging ? "file:///opt/cutiepi-shell/assets/data_sounds_effects_wav_Dock.wav" 
+            : "file:///opt/cutiepi-shell/assets/data_sounds_effects_wav_Undock.wav"
+        onSourceChanged: dockingSoundEffect.play()
     }
 
     Accelerometer {
