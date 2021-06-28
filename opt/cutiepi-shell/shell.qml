@@ -78,6 +78,7 @@ Item {
 
     function turnScreenOn() { process.start("raspi-gpio", ["set", "12", "dh"]); }
     function turnScreenOff() { process.start("raspi-gpio", ["set", "12", "dl"]); }
+    function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
 
     onScreenLockedChanged: {
         if (screenLocked) {
@@ -617,7 +618,7 @@ Item {
                 Rectangle{
                     id: volumeBar
                     anchors{
-                        topMargin: 75
+                        topMargin: 95
                         top: parent.top
                         left: parent.left
                         right: parent.right
@@ -648,53 +649,46 @@ Item {
                         }
                     }
 
-                    Rectangle{
-                        id: volumeBarTrack
-                        anchors{
-                            verticalCenter: parent.verticalCenter
-                            right: volumeHigh.left
-                            left: volumeMuted.right
-                            rightMargin: 20
-                            leftMargin: 20
+                    Slider { 
+                        id: volumeSlider
+                        from: 0; to: 100; stepSize: 20; value: 60; 
+                        anchors { left: volumeMuted.right; right: volumeHigh.left; verticalCenter: parent.verticalCenter; margins: 10 } 
+                        background: Rectangle {
+                            x: volumeSlider.leftPadding
+                            y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
+                            implicitWidth: 200
+                            implicitHeight: 4
+                            width: volumeSlider.availableWidth
+                            height: implicitHeight
+                            radius: 2
+                            color: "#bdbebf"
+
+                            Rectangle {
+                                width: volumeSlider.visualPosition * parent.width
+                                height: parent.height
+                                color: "#21be2b"
+                                radius: 2
+                            }
                         }
-                        height: 2
-                        radius: 1
-                        color: "#ECEFF4"
-                    }
-
-                    Rectangle{
-                        id: volumeBarThumb
-                        height: 30
-                        width: 30
-                        radius: 15
-                        y: volumeBarTrack.y - height/2
-                        x: volumeBarTrack.x + volumeBarTrack.width/2
-
-                        MouseArea{
-                            anchors.fill: parent
-                            drag.target: volumeBarThumb; drag.axis: Drag.XAxis; drag.minimumX: volumeBarTrack.x; drag.maximumX: volumeBarTrack.x - width + volumeBarTrack.width
-                        }
-
-                        onXChanged: {
-                            var fullrange = volumeBarTrack.width - volumeBarThumb.width
-                            var vol = 100*(volumeBarThumb.x - volumeBarTrack.x)/fullrange
-                            if(vol <= 2)
+                        onValueChanged: {
+                            if (value == 0)
                                 audio.source = "icons/audio-volume-muted-symbolic.svg"
-                            else if(vol < 25)
+                            else if (value <= 60)
                                 audio.source = "icons/audio-volume-low-symbolic.svg"
-                            else if(vol < 75)
+                            else if (value <= 80)
                                 audio.source = "icons/audio-volume-medium-symbolic.svg"
                             else
                                 audio.source = "icons/audio-volume-high-symbolic.svg"
+                            setAudioVolume(value);
                         }
-                    }
+		            }
                 }
 
                 // orientation lock
                 Rectangle{
                     id: orientationLock
                     anchors{
-                        topMargin: 10
+                        topMargin: 20
                         top: volumeBar.bottom
                         left: parent.left
                         right: parent.right
@@ -771,7 +765,7 @@ Item {
                         right: parent.right
                         left:parent.left
                         top: orientationLock.bottom
-                        topMargin: 10
+                        topMargin: 20
                         leftMargin: 20; rightMargin: 20
                     }
                     height: 1
@@ -1112,7 +1106,7 @@ Item {
                     reversible: true
                     enabled: !VirtualKeyboardSettings.fullScreenMode
                     ParallelAnimation {
-		                NumberAnimation {
+                        NumberAnimation {
                             properties: "x"
                             duration: 250
                             easing.type: Easing.InOutQuad
