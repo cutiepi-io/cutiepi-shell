@@ -19,9 +19,10 @@ Item {
             anchors.topMargin: 100
             anchors.horizontalCenter: parent.horizontalCenter
             color: "#81A1C1"
-            Text{
+            Text {
                 anchors.centerIn: parent
                 color: "white"
+                leftPadding: 55
                 text: "Slide to power off"
             }
 
@@ -47,6 +48,9 @@ Item {
                             resetSwitchoffThumb.start();
                     }
                 }
+                
+                Text { anchors.centerIn: parent; 
+                    text: "\uf011"; font.family: icon.name }
 
                 NumberAnimation {
                     id: resetSwitchoffThumb
@@ -81,6 +85,8 @@ Item {
                 color: "black"
                 text: "\uf00d"
                 font.family: icon.name
+		        Text { text: "Cancel"; anchors.top: parent.bottom; anchors.topMargin: 40; 
+                    anchors.horizontalCenter: parent.horizontalCenter; color: 'white' } 
             }
             MouseArea {
                 anchors.fill: parent
