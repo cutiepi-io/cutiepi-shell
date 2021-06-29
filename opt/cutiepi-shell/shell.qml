@@ -74,6 +74,7 @@ Item {
 
     Component.onCompleted: {
         mcuInfo.start();
+        process.start("rfkill", ["unblock", "all"]);
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
@@ -1105,7 +1106,7 @@ Item {
 
                 states: State {
                     name: "visible"
-                    when: inputPanel.active && root.state != "locked"
+                    when: inputPanel.active && root.state != "locked" && root.state != "switchoff"
                     PropertyChanges {
                         target: inputPanel
                         x: keyboardPosition[root.orientation].x
@@ -1176,7 +1177,7 @@ Item {
                 }
             }
 
-            PowerOffMenu { id: switchOff }
+            PowerOffMenu { id: powerOffMenu }
         } // end of content  
 
         // notification
