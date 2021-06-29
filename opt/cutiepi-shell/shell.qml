@@ -167,33 +167,32 @@ Item {
               '3.62': 30, '3.60': 25, '3.58': 20, '3.545': 15, '3.51': 10, '3.42': 5, '3.00': 0 }
 
         onButtonChanged: {
-	    if (button == 1)
-            screenLocked = !screenLocked;
-	    if (button == 3)
-            switchoffScreen = true;
+            if (button == 1)
+                screenLocked = !screenLocked;
+            if (button == 3)
+                switchoffScreen = true;
         }
         onBatteryChanged: {
-            if (battery > 5) { 
-                var currentVol = (battery/1000).toFixed(2); 
-                var sum = 0; 
-                queue.push(currentVol); 
-                if (queue.length > 10)
-                    queue.shift()
-                for (var i = 0; i < queue.length; i++) {
-                    sum += parseFloat(queue[i])
-                }
-                var meanVol = (sum/queue.length).toFixed(2);
-                for (var vol in batteryAttributes) {
-                    if (meanVol >= parseFloat(vol)) { 
-                        var volPercent = batteryAttributes[vol];
-                        batteryPercentage = volPercent // + "(" + meanVol + "V)"
-                        break;
-                    }
-                }
-            } else { // temporary hack for charging signal 
-                if (battery == 4) batteryCharging = true 
-                if (battery == 5) batteryCharging = false 
+            var currentVol = (battery/1000).toFixed(2); 
+            var sum = 0; 
+            queue.push(currentVol); 
+            if (queue.length > 10)
+                queue.shift()
+            for (var i = 0; i < queue.length; i++) {
+                sum += parseFloat(queue[i])
             }
+            var meanVol = (sum/queue.length).toFixed(2);
+            for (var vol in batteryAttributes) {
+                if (meanVol >= parseFloat(vol)) { 
+                    var volPercent = batteryAttributes[vol];
+                    batteryPercentage = volPercent
+                    break;
+                }
+            }
+        }
+        onChargeChanged: {
+            if (charge == 4) batteryCharging = true 
+            if (charge == 5) batteryCharging = false 
         }
     }
 
