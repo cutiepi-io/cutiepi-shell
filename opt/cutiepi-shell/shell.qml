@@ -409,14 +409,15 @@ Item {
             Component {
                 id: tabTermView
                 Yat.Screen { 
+                    id: terminal
                     property variant url: "term://"
                     property variant canGoBack: false 
                     property variant title: "Terminal" 
                     property variant icon: "icons/terminal-512.png"
-                    id: terminal
                     anchors.fill: parent 
                     anchors.topMargin: 85
                     font.pointSize: 8 
+                    z: 0
                 }
             } 
 
@@ -430,6 +431,7 @@ Item {
                     top: parent.top
                     right: parent.right
                 }
+                z: 1
 
                 // hamburger button 
                 Text {
@@ -493,6 +495,7 @@ Item {
                     margins: 20; topMargin: 15; leftMargin: 125
                 }
                 radius: 26
+                z: 1
 
                 TextInput { 
                     id: urlText
@@ -599,16 +602,17 @@ Item {
                 width: (typeof(Tab.itemMap[currentTab]) !== "undefined") ? parent.width * (Tab.itemMap[currentTab].loadProgress/100) : 0
                 anchors { bottom: naviBar.bottom; left: parent.left }
                 color: "#bf616a" 
+                z: 1
             }
 
             Rectangle { 
-                width: 10; height: 10; color: "#2E3440"; anchors { top: parent.top; right: setting.left }
+                width: 10; height: 10; z: 1; color: "#2E3440"; anchors { top: parent.top; right: setting.left } 
             }
             Rectangle { 
-                width: 24; height: 24; color: "#ECEFF4"; radius: 12; anchors { top: parent.top; right: setting.left }
+                width: 24; height: 24; z: 1; color: "#ECEFF4"; radius: 12; anchors { top: parent.top; right: setting.left }
             }
             Rectangle { 
-                width: setting.width - 20; height: 65 + 25; color: "#2E3440"; 
+                width: setting.width - 20; height: 65 + 25; color: "#2E3440"; z: 1;
                 anchors { top: parent.top; right: parent.right; topMargin: -25 } radius: 22 
             }
 
