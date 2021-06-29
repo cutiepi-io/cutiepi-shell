@@ -74,14 +74,17 @@ Item {
 
     Component.onCompleted: {
         mcuInfo.start();
+        setAudioVolume(80);
+        setScreenBrightness(100);
         process.start("rfkill", ["unblock", "all"]);
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
 
-    function turnScreenOn() { process.start("raspi-gpio", ["set", "12", "dh"]); }
-    function turnScreenOff() { process.start("raspi-gpio", ["set", "12", "dl"]); }
+    function turnScreenOn() { setScreenBrightness(50 + brightnessSlider.value) }
+    function turnScreenOff() { setScreenBrightness(0) }
     function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
+    function setScreenBrightness(val) { process.start("/opt/cutiepi-shell/assets/setBrightness", [val]); }
 
     onScreenLockedChanged: {
         if (screenLocked) {
@@ -621,10 +624,10 @@ Item {
             Rectangle {
                 id: settingSheet
                 width: setting.width - 20 
-                height: 600 
+                height: 660
                 color: "#2E3440"
                 anchors { right: parent.right;  }
-                y: -600
+                y: -height 
                 radius: 22
                 z: 3 
 
@@ -665,7 +668,7 @@ Item {
 
                     Slider { 
                         id: volumeSlider
-                        from: 0; to: 100; stepSize: 20; value: 60; 
+                        from: 0; to: 100; stepSize: 20; value: 80; 
                         anchors { left: volumeMuted.right; right: volumeHigh.left; verticalCenter: parent.verticalCenter; margins: 10 } 
                         background: Rectangle {
                             x: volumeSlider.leftPadding
@@ -695,7 +698,7 @@ Item {
                                 audio.source = "icons/audio-volume-high-symbolic.svg"
                             setAudioVolume(value);
                         }
-		            }
+                    }
                 }
 
                 // orientation lock
@@ -718,7 +721,7 @@ Item {
                         anchors{
                             verticalCenter: parent.verticalCenter
                             left: parent.left
-                            leftMargin: 10
+                            leftMargin: 15
                         }
                         font.pointSize: 9
                     }
@@ -772,13 +775,72 @@ Item {
                     }
                 }
 
+                Rectangle{
+                    id: brightnessControl
+                    anchors{
+                        topMargin: 20
+                        top: orientationLock.bottom
+                        left: parent.left
+                        right: parent.right
+                    }
+
+                    width: parent.width - 25
+                    height: 40
+                    color: "transparent"
+
+                        Text {
+                            id: brightnessIcon
+                            text: "\uf0eb"
+                            font.family: icon.name
+                            color: "#ECEFF4"
+                            anchors{
+                                verticalCenter: parent.verticalCenter
+                                left: parent.left
+                                leftMargin: 20
+                            }
+                            font.pointSize: 10
+                        }
+                        Slider { 
+                            id: brightnessSlider
+                            from: 0; to: 50; stepSize: 10; value: 50; 
+                            anchors {
+                                left: brightnessIcon.right
+                                leftMargin: 15
+                                right: parent.right
+                                rightMargin: 15
+                                verticalCenter: parent.verticalCenter
+
+                            }
+                            background: Rectangle {
+                                x: brightnessSlider.leftPadding
+                                y: brightnessSlider.topPadding + brightnessSlider.availableHeight / 2 - height / 2
+                                implicitWidth: 200
+                                implicitHeight: 4
+                                width: brightnessSlider.availableWidth
+                                height: implicitHeight
+                                radius: 2
+                                color: "#bdbebf"
+
+                                Rectangle {
+                                    width: brightnessSlider.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#21be2b"
+                                    radius: 2
+                                }
+                            }
+                            onValueChanged: {
+                                setScreenBrightness(50+value)
+                            }
+		                }
+                }
+
                 // separator
                 Rectangle{
                     id: separator
                     anchors{
                         right: parent.right
                         left:parent.left
-                        top: orientationLock.bottom
+                        top: brightnessControl.bottom
                         topMargin: 20
                         leftMargin: 20; rightMargin: 20
                     }
@@ -921,7 +983,7 @@ Item {
                     // audio
                     Image {
                         id: audio
-                        source: "icons/audio-volume-high-symbolic.svg"
+                        source: "icons/audio-volume-medium-symbolic.svg"
                         width: 34; height: width; sourceSize.width: width*2; sourceSize.height: height*2;
                     }
 
@@ -1273,7 +1335,7 @@ Item {
         State {
             name: "normal"
             PropertyChanges { target: content; anchors.leftMargin: 0 }
-            PropertyChanges { target: settingSheet; y: -600 + 65 }
+            PropertyChanges { target: settingSheet; y: -settingSheet.height + 65 }
         }
     ]
 
