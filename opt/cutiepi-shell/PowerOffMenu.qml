@@ -50,7 +50,7 @@ Item {
                 }
                 
                 Text { anchors.centerIn: parent; 
-                    text: "\uf011"; font.family: icon.name }
+                    text: "\uf011"; font.family: fontAwesome.name }
 
                 NumberAnimation {
                     id: resetSwitchoffThumb
@@ -84,7 +84,7 @@ Item {
                 anchors.centerIn: parent
                 color: "black"
                 text: "\uf00d"
-                font.family: icon.name
+                font.family: fontAwesome.name
 		        Text { text: "Cancel"; anchors.top: parent.bottom; anchors.topMargin: 40; 
                     anchors.horizontalCenter: parent.horizontalCenter; color: 'white' } 
             }

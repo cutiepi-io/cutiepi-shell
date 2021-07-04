@@ -74,9 +74,12 @@ Item {
 
     Component.onCompleted: {
         mcuInfo.start();
-        setAudioVolume(80);
-        setScreenBrightness(100);
+        Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
         process.start("rfkill", ["unblock", "all"]);
+
+        setScreenBrightness(100);
+        setAudioVolume(80);
+        mcuInfo.getVersion();
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
@@ -95,6 +98,7 @@ Item {
         }
     }
     onSwitchoffScreenChanged: {
+        turnScreenOn();
         if (switchoffScreen) {
             root.state = "switchoff";
         } else {
@@ -194,6 +198,9 @@ Item {
             if (charge == 4) batteryCharging = true 
             if (charge == 5) batteryCharging = false 
         }
+        onVersionChanged: {
+            console.log("MCU version: " + version)
+        }
     }
 
     SoundEffect {
@@ -253,7 +260,7 @@ Item {
         height: root.portraitMode ? 1280 : 800 
 
         FontLoader {
-            id: icon
+            id: fontAwesome
             source: "file:///opt/cutiepi-shell/Font Awesome 5 Free-Solid-900.otf" 
         }
 
@@ -312,7 +319,7 @@ Item {
                                 visible: tabListView.currentIndex === index
                                 anchors { top: parent.top; right: parent.right; margins: Tab.DrawerMargin }
                                 text: "\uF057"
-                                font.family: icon.name
+                                font.family: fontAwesome.name
                                 font.pointSize: 10
                                 color: "gray"
 
@@ -335,7 +342,7 @@ Item {
                     height: 80
                     color: "transparent"
                     Text { 
-                        text: "\uF067"; font.family: icon.name; color: "white"; font.pointSize: 10
+                        text: "\uF067"; font.family: fontAwesome.name; color: "white"; font.pointSize: 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
                     }
                     Text { 
@@ -351,7 +358,7 @@ Item {
                             Tab.openNewTab("page-"+Tab.salt(), Tab.HomePage); 
                         }
                         onPressAndHold: {
-                            Tab.openNewTermTab("page-"+Tab.salt());
+                            Tab.openNewAppTab("page-"+Tab.salt(), 'term');
                         }
                     }
                 }
@@ -376,6 +383,29 @@ Item {
                 }
                 highlightMoveDuration: 2
                 highlightFollowsCurrentItem: true 
+                footer: Rectangle { 
+                    width: Tab.DrawerWidth
+                    height: 80
+                    color: "transparent"
+                    Text { 
+                        text: "\uF013"; font.family: fontAwesome.name; color: "white"; font.pointSize: 10
+                        anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
+                    }
+                    Text { 
+                        text: "<b>More Options</b>"
+                        color: "white"
+                        font.pointSize: 10
+                        anchors { top: parent.top; left: parent.left; margins: 18; leftMargin: 70; }
+                    }
+                    MouseArea { 
+                        anchors.fill: parent; 
+                        enabled: (root.state == "drawer") 
+                        onClicked: {
+                            Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
+                        }
+                    }
+                }
+                footerPositioning: ListView.OverlayFooter
             }
         }
 
@@ -413,7 +443,7 @@ Item {
                 id: tabTermView
                 Yat.Screen { 
                     id: terminal
-                    property variant url: "term://"
+                    property variant url: "cutiepi://term"
                     property variant canGoBack: false 
                     property variant title: "Terminal" 
                     property variant icon: "icons/terminal-512.png"
@@ -423,6 +453,19 @@ Item {
                     z: 0
                 }
             } 
+            Component {
+                id: tabFactoryModeView 
+                FactoryMode {
+                    id: factoryMode
+                    property variant url: "cutiepi://factorymode"
+                    property variant canGoBack: false 
+                    property variant title: "Factory Testing Mode" 
+                    property variant icon: "icons/terminal-512.png"
+                    anchors.fill: parent 
+                    anchors.topMargin: 85
+                    z: 0 
+                }
+            }
 
             // navi bar 
             Rectangle {
@@ -440,7 +483,7 @@ Item {
                 Text {
                     id: hamburgerButton
                     font.pointSize: 14
-                    font.family: icon.name 
+                    font.family: fontAwesome.name 
                     text: "\uf0c9"
                     color: "#434C5E"
                     anchors {
@@ -457,21 +500,21 @@ Item {
                     }
                 }
 
-                // controls and label for terminal tab, only visible if it's terminal 
+                // controls and label for app tabs, only visible if it's an app 
                 Text { 
-                    visible: hasTabOpen && (Tab.itemMap[currentTab].url == "term://")
+                    visible: hasTabOpen && (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                     anchors {  left: hamburgerButton.right; leftMargin: 30; verticalCenter: parent.verticalCenter } 
-                    text: "Terminal"; color: "#434C5E"; font.pointSize: 12
+                    text: Tab.itemMap[currentTab].title; color: "#434C5E"; font.pointSize: 12
                 }
 
                 Item {
                     id: backButton
                     width: 30; height: 30; anchors { left: hamburgerButton.right; margins: 20; top: parent.top; topMargin: 22 }
-                    visible: !hasTabOpen || Tab.itemMap[currentTab].url !== "term://"
+                    visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                     Text { 
                         id: backButtonIcon
                         text: "\uF053" 
-                        font { family: icon.name; pointSize: 15 }
+                        font { family: fontAwesome.name; pointSize: 15 }
                         color: hasTabOpen ? (Tab.itemMap[currentTab].canGoBack ? "#434C5E" : "lightgray") : "lightgray"
                     }
 
@@ -491,7 +534,7 @@ Item {
                 width: parent.width - 510
                 height: 55
                 color: "#D8DEE9"; border.width: 0; border.color: "#2E3440";
-                visible: !hasTabOpen || Tab.itemMap[currentTab].url !== "term://"
+                visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                 anchors {
                     top: parent.top
                     left: parent.left
@@ -531,7 +574,7 @@ Item {
                     id: stopButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF00D"
-                    font { family: icon.name; pointSize: 12 }
+                    font { family: fontAwesome.name; pointSize: 12 }
                     color: "gray"
                     visible: ( hasTabOpen && Tab.itemMap[currentTab].loadProgress < 100 && !urlText.focus) ? true : false
                     MouseArea {
@@ -543,7 +586,7 @@ Item {
                     id: reloadButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF01E"
-                    font { family: icon.name; pointSize: 8 }
+                    font { family: fontAwesome.name; pointSize: 8 }
                     color: "gray"
                     visible: ( hasTabOpen && Tab.itemMap[currentTab].loadProgress == 100 && !urlText.focus ) ? true : false 
                     MouseArea {
@@ -555,7 +598,7 @@ Item {
                     id: clearButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF057"
-                    font { family: icon.name; pointSize: 12 }
+                    font { family: fontAwesome.name; pointSize: 12 }
                     color: "gray"
                     visible: urlText.focus
                     MouseArea {
@@ -584,7 +627,7 @@ Item {
                 smooth: true;
                 source: suggestionContainer;
             }
-
+	
             MouseArea { 
                 id: overlayMouseArea 
                 anchors.fill: parent 
@@ -790,7 +833,7 @@ Item {
                         Text {
                             id: brightnessIcon
                             text: "\uf0eb"
-                            font.family: icon.name
+                            font.family: fontAwesome.name
                             color: "#ECEFF4"
                             anchors{
                                 verticalCenter: parent.verticalCenter
@@ -876,7 +919,7 @@ Item {
                                 color: 'transparent'
                                 anchors.verticalCenter: parent.verticalCenter
                                 Text {
-                                    font.family: icon.name 
+                                    font.family: fontAwesome.name 
                                     font.pixelSize: 12
                                     text: (modelData.state == "online" || modelData.state == "ready") ? "\uf00c" : ""
                                     color: "#ECEFF4"

@@ -25,7 +25,7 @@ Item {
             anchors.topMargin: -25
             anchors.left: parent.horizontalCenter
             anchors.leftMargin: -15
-            font { family: icon.name; pointSize: 17 }
+            font { family: fontAwesome.name; pointSize: 17 }
             text: "\uF0D8"; 
             color: "#ECEFF4" 
         }

@@ -22,15 +22,27 @@ function openNewTab(pageid, url) {
     tabListView.currentIndex = 0 // move highlight to top  
 }
 
-function openNewTermTab(pageid) {
-    //console.log("openNewTab: "+ pageid + ', currentTab: ' + currentTab);
-    if (hasTabOpen) { 
-        tabModel.insert(0, { "title": "Terminal", "url": "term://", "pageid": pageid, "favicon": "icons/favicon.png" } );
+function openNewAppTab(pageid, app) {
+    var tabData, termView;
+
+    switch(app) {
+        case 'term': 
+            tabData = { "title": "Terminal", "url": "cutiepi://term", "pageid": pageid, "icon": "icons/favicon.png" };
+            termView = tabTermView.createObject(content, { id: pageid, objectName: pageid });
+            break;
+        case 'factorymode': 
+            tabData = { "title": "Factory Testing Mode", "url": "cutiepi://factorymode", "pageid": pageid, "icon": "icons/favicon.png" };
+            termView = tabFactoryModeView.createObject(content, { id: pageid, objectName: pageid });
+            break;
+    }
+
+    if (hasTabOpen) {
+        tabModel.insert(0, tabData);
         itemMap[currentTab].visible = false;
     } else {
-        tabModel.set(0, { "title": "Terminal", "url": "term://", "pageid": pageid, "favicon": "icons/favicon.png" } );
+        tabModel.set(0, tabData);
     }
-    var termView = tabTermView.createObject(content, { id: pageid, objectName: pageid } );
+
     itemMap[pageid] = termView;
 
     if (currentTab !== pageid && currentTab !== "") { 
@@ -154,7 +166,7 @@ function queryHistory(str) {
     var result; 
     db.transaction(
         function(tx) {
-            result = tx.executeSql("select * from history where url like ?", ['%'+str+'%']) 
+            result = tx.executeSql("select * from history where url like ? and url not like 'cutiepi://'", ['%'+str+'%']) 
         }
     );
     historyModel.clear();
