@@ -79,7 +79,6 @@ Item {
 
         setScreenBrightness(100);
         setAudioVolume(80);
-        mcuInfo.getVersion();
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
@@ -200,6 +199,9 @@ Item {
         }
         onVersionChanged: {
             console.log("MCU version: " + version)
+        }
+        Timer { 
+            interval: 1000; repeat: true; running: (mcuInfo.version === ""); onTriggered: mcuInfo.getVersion();
         }
     }
 
@@ -358,7 +360,7 @@ Item {
                             Tab.openNewTab("page-"+Tab.salt(), Tab.HomePage); 
                         }
                         onPressAndHold: {
-                            Tab.openNewAppTab("page-"+Tab.salt(), 'term');
+                            Tab.openNewAppTab("page-"+Tab.salt(), 'terminal');
                         }
                     }
                 }
@@ -392,7 +394,7 @@ Item {
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
                     }
                     Text { 
-                        text: "<b>More Options</b>"
+                        text: "<b>Settings</b>"
                         color: "white"
                         font.pointSize: 10
                         anchors { top: parent.top; left: parent.left; margins: 18; leftMargin: 70; }
@@ -401,7 +403,7 @@ Item {
                         anchors.fill: parent; 
                         enabled: (root.state == "drawer") 
                         onClicked: {
-                            Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
+                            Tab.goToSetting();
                         }
                     }
                 }
@@ -443,7 +445,7 @@ Item {
                 id: tabTermView
                 Yat.Screen { 
                     id: terminal
-                    property variant url: "cutiepi://term"
+                    property variant url: "cutiepi://terminal"
                     property variant canGoBack: false 
                     property variant title: "Terminal" 
                     property variant icon: "icons/terminal-512.png"
@@ -460,6 +462,19 @@ Item {
                     property variant url: "cutiepi://factorymode"
                     property variant canGoBack: false 
                     property variant title: "Factory Testing Mode" 
+                    property variant icon: "icons/terminal-512.png"
+                    anchors.fill: parent 
+                    anchors.topMargin: 85
+                    z: 0 
+                }
+            }
+            Component {
+                id: tabSettingView 
+                SettingView {
+                    id: settingView
+                    property variant url: "cutiepi://setting"
+                    property variant canGoBack: false 
+                    property variant title: "Settings" 
                     property variant icon: "icons/terminal-512.png"
                     anchors.fill: parent 
                     anchors.topMargin: 85
@@ -1292,7 +1307,6 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: 300
             y: -160
-            visible: y <= 0
             Rectangle {
                 id: notificationContainer
                 width: 480
