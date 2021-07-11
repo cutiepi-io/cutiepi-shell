@@ -1,0 +1,19 @@
+#!/bin/bash
+
+export XDG_RUNTIME_DIR="/run/user/1000"
+export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus"
+
+export QT_QPA_PLATFORM=eglfs
+export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+export QT_IM_MODULE=qtvirtualkeyboard
+
+#export QT_VIRTUALKEYBOARD_LAYOUT_PATH=/opt/cutiepi-shell/layouts/
+#export QT_QPA_EGLFS_KMS_CONFIG=/opt/cutiepi-shell/kms.conf
+
+if [ ! "`systemctl is-active connman`" == "active" ]; then 
+    sudo service connman start 
+fi
+
+rfkill unblock all
+
+/opt/qt5/bin/qmlscene /opt/cutiepi-shell/shell.qml
