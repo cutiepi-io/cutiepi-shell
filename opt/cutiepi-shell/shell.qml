@@ -44,7 +44,7 @@ Item {
     id: root
     width: 800
     height: 1280
-    Rectangle { anchors.fill: parent; color: '#2E3440' }
+    Rectangle { anchors.fill: parent; color: '#ececec' }
 
     property variant formatDateTimeString: "HH:mm"
     property variant batteryPercentage: ""
@@ -108,7 +108,7 @@ Item {
     Timer {
         id: scanTimer
         interval: (root.state == "setting") ? 5000 : 30000
-        running: networkingModel.powered 
+        running: networkingModel.powered && ( root.state !== "locked" )
         repeat: true
         triggeredOnStart: true
         onTriggered: {
@@ -257,7 +257,7 @@ Item {
 
     Rectangle {
         id: view
-        color: '#2E3440'
+        color: "#ececec"
         width: root.portraitMode ? 800 : 1280
         height: root.portraitMode ? 1280 : 800 
 
@@ -276,10 +276,12 @@ Item {
 
         Rectangle {
             id: sidebar  
-            height: parent.height 
-            width: Tab.DrawerWidth 
-            anchors { left: parent.left; top: parent.top }
-            color: "#2E3440"
+            height: parent.height + 4
+            width: Tab.DrawerWidth + 4
+            anchors { left: parent.left; margins: -2; leftMargin: -4; top: parent.top }
+            color: '#ececec'
+            border.width: 2
+            border.color: '#c5c5c3'
 
             ListModel { id: tabModel }
             Component {
@@ -287,7 +289,7 @@ Item {
                 Row {
                     spacing: 10
                     Rectangle {
-                        width: Tab.DrawerWidth
+                        width: Tab.DrawerWidth + 2
                         height: 50 
                         color: "transparent"
                         Image { 
@@ -298,10 +300,10 @@ Item {
                         Text { 
                             text: (typeof(Tab.itemMap[model.pageid]) !== "undefined" && Tab.itemMap[model.pageid].title !== "") ? 
                             Tab.itemMap[model.pageid].title : "Loading..";
-                            color: "white"; 
+                            color: "#3e3e3e" 
                             font.pointSize: 7
                             anchors { left: parent.left; margins: Tab.DrawerMargin; verticalCenter: parent.verticalCenter
-                                leftMargin: Tab.DrawerMargin+30; right: parent.right; rightMargin: 36 } 
+                                leftMargin: Tab.DrawerMargin+30; right: parent.right; rightMargin: 38 } 
                             elide: Text.ElideRight 
                         }
                         MouseArea { 
@@ -319,7 +321,7 @@ Item {
                             anchors { right: parent.right; top: parent.top}
                             Text {  // closeTab button
                                 visible: tabListView.currentIndex === index
-                                anchors { top: parent.top; right: parent.right; margins: Tab.DrawerMargin }
+                                anchors { top: parent.top; right: parent.right; margins: Tab.DrawerMargin; topMargin: Tab.DrawerMargin - 2 }
                                 text: "\uF057"
                                 font.family: fontAwesome.name
                                 font.pointSize: 10
@@ -344,12 +346,12 @@ Item {
                     height: 80
                     color: "transparent"
                     Text { 
-                        text: "\uF067"; font.family: fontAwesome.name; color: "white"; font.pointSize: 10
+                        text: "\uF067"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
                     }
                     Text { 
                         text: "<b>New Tab</b>"
-                        color: "white"
+                        color: "#3e3e3e"
                         font.pointSize: 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 70; }
                     }
@@ -369,13 +371,7 @@ Item {
                 delegate: tabDelegate 
                 highlight: Rectangle { 
                     width: Tab.DrawerWidth; height: Tab.DrawerHeight + 10 
-                    gradient: Gradient {
-                        GradientStop { position: 0.1; color: "#1F1F23" }
-                        GradientStop { position: 0.5; color: "#28282F" }
-                        GradientStop { position: 0.8; color: "#2A2B31" }
-                        GradientStop { position: 1.0; color: "#25252A" }
-
-                    }
+                    color: "#d4d4d4"
                 }
                 add: Transition {
                     NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
@@ -390,12 +386,12 @@ Item {
                     height: 80
                     color: "transparent"
                     Text { 
-                        text: "\uF013"; font.family: fontAwesome.name; color: "white"; font.pointSize: 10
+                        text: "\uF013"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
                     }
                     Text { 
                         text: "<b>Settings</b>"
-                        color: "white"
+                        color: '#3e3e3e'
                         font.pointSize: 10
                         anchors { top: parent.top; left: parent.left; margins: 18; leftMargin: 70; }
                     }
@@ -413,10 +409,10 @@ Item {
 
         Rectangle { 
             id: content 
-            width: parent.width
+            width: parent.width 
             height: parent.height 
-            anchors { left: parent.left; top: parent.top }
-            color: "#D8DEE9"
+            anchors { left: parent.left; top: parent.top; }
+            color: "#f7f6f4"
             
             SequentialAnimation { 
                 id: tabBounce 
@@ -485,7 +481,7 @@ Item {
             // navi bar 
             Rectangle {
                 id: naviBar
-                color: "#ECEFF4"
+                color: "#f7f6f4"
                 width: parent.width 
                 height: 85
                 anchors {
@@ -500,7 +496,7 @@ Item {
                     font.pointSize: 14
                     font.family: fontAwesome.name 
                     text: "\uf0c9"
-                    color: "#434C5E"
+                    color: '#3e3e3e'
                     anchors {
                         left: parent.left; margins: 22; verticalCenter: parent.verticalCenter;
                     }
@@ -519,7 +515,7 @@ Item {
                 Text { 
                     visible: hasTabOpen && (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                     anchors {  left: hamburgerButton.right; leftMargin: 30; verticalCenter: parent.verticalCenter } 
-                    text: Tab.itemMap[currentTab].title; color: "#434C5E"; font.pointSize: 12
+                    text: Tab.itemMap[currentTab].title; color: "#3e3e3e"; font.pointSize: 12
                 }
 
                 Item {
@@ -548,7 +544,7 @@ Item {
                 id: urlBar
                 width: parent.width - 510
                 height: 55
-                color: "#D8DEE9"; border.width: 0; border.color: "#2E3440";
+                color: "#e7e7e5"
                 visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                 anchors {
                     top: parent.top
@@ -561,7 +557,7 @@ Item {
                 TextInput { 
                     id: urlText
                     text: hasTabOpen ? Tab.itemMap[currentTab].url : ""
-                    font.pointSize: 9; color: "#2E3440"; selectionColor: "#434C5E"
+                    font.pointSize: 9; color: "#2E3440"; selectionColor: "#4875E2"
                     anchors { left: parent.left; top: parent.top; right: stopButton.left; margins: 11; }
                     height: parent.height
                     inputMethodHints: Qt.ImhNoAutoUppercase // url hint 
@@ -667,13 +663,13 @@ Item {
             }
 
             Rectangle { 
-                width: 10; height: 10; z: 1; color: "#2E3440"; anchors { top: parent.top; right: setting.left } 
+                width: 10; height: 10; z: 1; color: "#989897"; anchors { top: parent.top; right: setting.left } 
             }
             Rectangle { 
-                width: 24; height: 24; z: 1; color: "#ECEFF4"; radius: 12; anchors { top: parent.top; right: setting.left }
+                width: 24; height: 24; z: 1; color: "#f7f6f4"; radius: 12; anchors { top: parent.top; right: setting.left }
             }
             Rectangle { 
-                width: setting.width - 20; height: 65 + 25; color: "#2E3440"; z: 1;
+                width: setting.width - 20; height: 65 + 25; color: "#989897"; z: 1;
                 anchors { top: parent.top; right: parent.right; topMargin: -25 } radius: 22 
             }
 
@@ -682,11 +678,18 @@ Item {
                 id: settingSheet
                 width: setting.width - 20 
                 height: 660
-                color: "#2E3440"
-                anchors { right: parent.right;  }
-                y: -height 
+                color: '#989897'
+                anchors { right: parent.right; }
+                y: -height - 20
                 radius: 22
                 z: 3 
+
+                BlurPanel {
+                    target: Tab.itemMap[currentTab]
+                    property variant targetY: parent.y
+                    anchors.fill: parent
+                    anchors.topMargin: 85
+                }
 
                 // volume bar
                 Rectangle{
@@ -740,7 +743,7 @@ Item {
                             Rectangle {
                                 width: volumeSlider.visualPosition * parent.width
                                 height: parent.height
-                                color: "#21be2b"
+                                color: "#4875E2"
                                 radius: 2
                             }
                         }
@@ -774,7 +777,7 @@ Item {
 
                     Text {
                         text: "Orientation Lock"
-                        color: "#ECEFF4"
+                        color: "white"
                         anchors{
                             verticalCenter: parent.verticalCenter
                             left: parent.left
@@ -793,7 +796,7 @@ Item {
                         width: 60
                         height: 30
                         radius: 15
-                        color: sensorEnabled ? "grey" : "limegreen"
+                        color: sensorEnabled ? "grey" : "#4875E2"
 
                         Rectangle{
                             id: toggleThumb
@@ -849,7 +852,7 @@ Item {
                             id: brightnessIcon
                             text: "\uf0eb"
                             font.family: fontAwesome.name
-                            color: "#ECEFF4"
+                            color: "white"
                             anchors{
                                 verticalCenter: parent.verticalCenter
                                 left: parent.left
@@ -881,7 +884,7 @@ Item {
                                 Rectangle {
                                     width: brightnessSlider.visualPosition * parent.width
                                     height: parent.height
-                                    color: "#21be2b"
+                                    color: "#4875E2"
                                     radius: 2
                                 }
                             }
@@ -937,14 +940,14 @@ Item {
                                     font.family: fontAwesome.name 
                                     font.pixelSize: 12
                                     text: (modelData.state == "online" || modelData.state == "ready") ? "\uf00c" : ""
-                                    color: "#ECEFF4"
+                                    color: "white"
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
                             }
                             Text {
                                 text: (modelData.name == "") ? "[Hidden Wifi]" : modelData.name
-                                color: "#ECEFF4"
+                                color: "white"
                                 elide: Text.ElideRight
                                 width: 230
                                 anchors.verticalCenter: parent.verticalCenter
@@ -995,7 +998,7 @@ Item {
 
             Rectangle {
                 id: setting  
-                color: "#2E3440"
+                color: '#989897' //"#2E3440"
                 width: 360 + 20 
                 height: 65
                 anchors {
@@ -1023,7 +1026,7 @@ Item {
                         anchors.topMargin: 5
                         anchors.rightMargin: (batteryCharging) ? -5 : -2 
                         anchors.top: parent.top 
-                        color: "#ECEFF4"
+                        color: 'white'
                     }
 
                     // battery 
@@ -1059,7 +1062,7 @@ Item {
                     Text {
                         font.pointSize: 11
                         text: Qt.formatDateTime(new Date(), formatDateTimeString)
-                        color: "#ECEFF4"
+                        color: 'white'
                         anchors.leftMargin: 5
                         Timer { 
                             repeat: true 
@@ -1165,11 +1168,11 @@ Item {
                     Row {
                         anchors {
                             left: parent.left
-                            bottom: parent.bottom
+                            bottom: parent.bottom; margins: 10
                         }
                         height: 60
                         width: parent.width
-                        spacing: 360
+                        spacing: 340
                         Rectangle {
                             height: 60
                             width: 120
@@ -1190,14 +1193,14 @@ Item {
                         }
                         Rectangle {
                             height: 60
-                            width: 120
-                            color: 'transparent'
+                            width: 120; radius: 10
+                            color: '#4875E2'
                             Text {
                                 text: 'Join' 
                                 font.pointSize: 10
                                 font.bold: true
                                 anchors.centerIn: parent
-                                color: '#5e81ac'
+                                color: 'white'
                             }
                             MouseArea {
                                 anchors.fill: parent

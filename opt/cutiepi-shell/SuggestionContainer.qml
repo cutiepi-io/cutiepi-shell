@@ -5,27 +5,28 @@ Item {
 
     property alias historyListView: historyListView
 
-    width: urlBar.width
+    width: root.portraitMode ? 400 : urlBar.width
     height: suggestionDialog.height + 55
-    anchors { top: urlBar.bottom; topMargin: -15; left: urlBar.left; }
-    visible: (urlText.focus && historyModel.count > 0)
+    anchors { top: urlBar.bottom; topMargin: -8; left: urlBar.left; }
+    visible: (urlText.focus && historyModel.count > 0) && root.state !== "setting"
     z: 3
 
     Rectangle {
         id: suggestionDialog
-        color: "#ECEFF4"
+        color: "#ececec"
         radius: 5 
         anchors.centerIn: parent 
-        width: urlBar.width 
+        width: root.portraitMode ? 400 : urlBar.width 
         height: (historyModel.count > 3) ? ((historyModel.count <= 6) ? historyModel.count * 50 : 410) : 180
         anchors { top: parent.top; topMargin: 50; left: parent.left; }
+        visible: (urlText.focus && historyModel.count > 0) && root.state !== "setting"
 
         Text { // caret-up 
             anchors.top: parent.top
-            anchors.topMargin: -25
+            anchors.topMargin: -32
             anchors.left: parent.horizontalCenter
-            anchors.leftMargin: -15
-            font { family: fontAwesome.name; pointSize: 17 }
+            anchors.leftMargin: root.portraitMode ? - (urlBar.width/2) : -20
+            font { family: fontAwesome.name; pointSize: 20 }
             text: "\uF0D8"; 
             color: "#ECEFF4" 
         }
@@ -33,7 +34,7 @@ Item {
         ListView { 
             id: historyListView
             anchors.fill: parent
-            anchors.topMargin: 15 
+            anchors.topMargin: 20
             anchors.bottomMargin: 15
             clip: true
             model: historyModel 
@@ -60,7 +61,7 @@ Item {
                             margins: 8;          
                             topMargin: 30; leftMargin: 10;
                         }                               
-                        color: "#434C5E"
+                        color: "#3e3e3e"
                         text: model.url                 
                         font.pointSize: 6 
                         elide: Text.ElideMiddle         
@@ -72,7 +73,7 @@ Item {
                 }
             }
             highlight: Rectangle { 
-                color: "#81a1c1"
+                color: '#d4d4d4'
             }
             highlightMoveDuration: 2
         } // end of historyListView
