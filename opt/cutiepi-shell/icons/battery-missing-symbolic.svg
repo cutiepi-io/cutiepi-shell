@@ -17,9 +17,9 @@
   <title id='title9167'>Gnome Symbolic Icon Theme</title>
   <defs id='defs7386'/>
   <g inkscape:label='status' transform='translate(-121.0002,-217)' inkscape:groupmode='layer' id='layer9' style='display:inline'>
-    <path inkscape:connector-curvature='0' d='m 127,217 c -0.65625,0 -1,0.31232 -1,1 l 0,1 -3,0 0,14 8,0 0,-6 3,0 0,-8 -3,0 0,-1 c 0,-0.57813 -0.26546,-1 -0.96875,-1 L 127,217 z' id='path3761' style='opacity:0.35;color:#bebebe;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible'/>
+    <path inkscape:connector-curvature='0' d='m 127,217 c -0.65625,0 -1,0.31232 -1,1 l 0,1 -3,0 0,14 8,0 0,-6 3,0 0,-8 -3,0 0,-1 c 0,-0.57813 -0.26546,-1 -0.96875,-1 L 127,217 z' id='path3761' style='opacity:0.35;color:#ffffff;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible'/>
     
-    <path inkscape:connector-curvature='0' d='m 132,228 1.375,0 1.125,1.09375 L 135.59375,228 137,228 l 0,1.46875 -1.09375,1.0625 L 137,231.59375 137,233 135.5625,233 134.5,231.9375 133.4375,233 132,233 l 0,-1.40625 1.0625,-1.0625 L 132,229.46875 132,228 z' id='path3761-2-3-5-4-8-9-8-9-9-0' sodipodi:nodetypes='ccccccccccccccccc' style='color:#bebebe;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible'/>
+    <path inkscape:connector-curvature='0' d='m 132,228 1.375,0 1.125,1.09375 L 135.59375,228 137,228 l 0,1.46875 -1.09375,1.0625 L 137,231.59375 137,233 135.5625,233 134.5,231.9375 133.4375,233 132,233 l 0,-1.40625 1.0625,-1.0625 L 132,229.46875 132,228 z' id='path3761-2-3-5-4-8-9-8-9-9-0' sodipodi:nodetypes='ccccccccccccccccc' style='color:#ffffff;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible'/>
   </g>
   <g inkscape:label='devices' transform='translate(-121.0002,-217)' inkscape:groupmode='layer' id='layer10'/>
   <g inkscape:label='apps' transform='translate(-121.0002,-217)' inkscape:groupmode='layer' id='layer11'/>
