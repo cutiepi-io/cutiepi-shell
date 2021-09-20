@@ -9,7 +9,8 @@ CutiePi shell is a mobile UI built for [CutiePi tablet](https://cutiepi.io) proj
 ## Features
 
 * Lockscreen with sleep/wake button events handling 
-* Built-in web browser, terminal emulator, and on-screen keyboard 
+* Web browser, terminal emulator, and on-screen keyboard 
+* Built-in adblocker, using ABP-compatible filters 
 * Side-tab for multitasking 
 * WiFi configurator 
 * Battery charging status and level reading (through UART) 
@@ -27,8 +28,9 @@ Cutiepi shell is written entirely in Qt using EGLFS QPA, and can be ported to [W
 
 - [Qt](http://download.qt.io/official_releases/qt/5.12/) `5.12` or later version 
 - [Yat](https://github.com/jorgen/yat) for terminal emulator 
-- [libconnman-qt](https://git.sailfishos.org/mer-core/libconnman-qt) and [ConnMan](https://01.org/connman) `1.37` for WiFi configuration 
+- [libconnman-qt](https://git.sailfishos.org/mer-core/libconnman-qt) and [ConnMan](https://01.org/connman) for WiFi configuration 
 - [CutiePi firmware](https://github.com/cutiepi-io/cutiepi-firmware) and [middleware plugins](https://github.com/cutiepi-io/cutiepi-middleware) for battery and sleep/wake button related functions 
+- [ad-block](https://github.com/brave/ad-block) and [easylist](https://easylist.to/easylist/easylist.txt) for adblocker (optional) 
 - [QtMpu6050](https://github.com/cutiepi-io/QtMpu6050) for QtSensors plugin support (optional) 
 
 ## License 
