@@ -15,5 +15,6 @@ if [ ! "`systemctl is-active connman`" == "active" ]; then
 fi
 
 rfkill unblock all
+sudo cpufreq-set -g ondemand
 
 /opt/qt5/bin/qmlscene /opt/cutiepi-shell/shell.qml

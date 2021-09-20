@@ -68,7 +68,7 @@ Item {
                     }
                     MouseArea { 
                         anchors.fill: parent; 
-                        onClicked: root.loadUrlWrapper(model.url)
+                        onClicked: view.loadUrlWrapper(model.url)
                     }
                 }
             }

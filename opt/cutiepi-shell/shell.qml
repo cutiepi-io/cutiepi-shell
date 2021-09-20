@@ -22,6 +22,7 @@
 */
 
 import QtQuick 2.15
+import QtQuick.Window 2.15
 import QtQuick.Controls 2.1
 import QtMultimedia 5.15 
 
@@ -40,10 +41,12 @@ import McuInfo 1.0
 import Process 1.0
 import "tabControl.js" as Tab 
 
-Item {  
-    id: root
+Window {  
+    id: view
     width: 800
     height: 1280
+    visible: true
+
     Rectangle { anchors.fill: parent; color: '#ececec' }
 
     property variant formatDateTimeString: "HH:mm"
@@ -92,10 +95,13 @@ Item {
         if (screenLocked) {
             turnScreenOff();
             root.state = "locked";
+            process.start("sudo", ["cpufreq-set", "-g", "powersave"]);
         } else {
             turnScreenOn();
+            process.start("sudo", ["cpufreq-set", "-g", "conservative"]);
         }
     }
+
     onSwitchoffScreenChanged: {
         turnScreenOn();
         if (switchoffScreen) {
@@ -218,7 +224,7 @@ Item {
         dataRate: 30
         onReadingChanged: {
             var accX = accel.reading.x
-            var accY = accel.reading.y - 2 //experimental calibration
+            var accY = accel.reading.y
             var accZ = -accel.reading.z
 
             var pitchAcc = Math.atan2(accY, accZ)*radians_to_degrees;
@@ -256,10 +262,10 @@ Item {
     }
 
     Rectangle {
-        id: view
+        id: root
         color: "#ececec"
-        width: root.portraitMode ? 800 : 1280
-        height: root.portraitMode ? 1280 : 800 
+        width: portraitMode ? 800 : 1280
+        height: portraitMode ? 1280 : 800 
 
         FontLoader {
             id: fontAwesome
@@ -267,8 +273,8 @@ Item {
         }
 
         // control the rotation of view 
-        x: root.portraitMode ? 0 : -240
-        y: root.portraitMode ? 0 : 240
+        x: portraitMode ? 0 : -240
+        y: portraitMode ? 0 : 240
         rotation: orientation
         Behavior on rotation {
             RotationAnimator { duration: 150; easing.type: Easing.InOutQuad; direction: RotationAnimator.Shortest }
@@ -1096,7 +1102,7 @@ Item {
                     running: false
                     repeat: false
                     onTriggered: {
-                        view.grabToImage(function(result) {
+                        root.grabToImage(function(result) {
                             var fileName = Qt.formatDateTime(new Date(), "yyyy-MM-dd-hh-mm-ss") + ".png";
                             result.saveToFile("/home/pi/Pictures/" + fileName);
                             console.log("Screenshot: " + fileName);
@@ -1221,18 +1227,20 @@ Item {
             InputPanel {
                 id: inputPanel
                 z: 89
-                x: keyboardPosition[root.orientation].hidden_x
-                y: keyboardPosition[root.orientation].hidden_y
-                width: root.portraitMode ? 800 : 1280
-                rotation: root.orientation
+                x: keyboardPosition[view.orientation].hidden_x
+                y: keyboardPosition[view.orientation].hidden_y
+                width: portraitMode ? 800 : 1280
+                rotation: orientation
+                visible: false
+                onActiveChanged: visible = true
 
                 states: State {
                     name: "visible"
                     when: inputPanel.active && root.state != "locked" && root.state != "switchoff"
                     PropertyChanges {
                         target: inputPanel
-                        x: keyboardPosition[root.orientation].x
-                        y: keyboardPosition[root.orientation].y
+                        x: view.keyboardPosition[view.orientation].x
+                        y: view.keyboardPosition[view.orientation].y
                     }
                 }
                 transitions: Transition {
@@ -1375,35 +1383,34 @@ Item {
             source: notification;
         }
 
-    } // end of view 
+        state: "normal" 
 
-    state: "normal" 
+        states: [
+            State {
+                name: "setting"
+                PropertyChanges { target: settingSheet; y: 0 } 
+            },
+            State { name: "locked" }, 
+            State { name: "popup" }, 
+            State { name: "switchoff" }, 
+            State{
+                name: "drawer"
+                PropertyChanges { target: content; anchors.leftMargin: Tab.DrawerWidth }
+            },
+            State {
+                name: "normal"
+                PropertyChanges { target: content; anchors.leftMargin: 0 }
+                PropertyChanges { target: settingSheet; y: -settingSheet.height + 65 }
+            }
+        ]
 
-    states: [
-        State {
-            name: "setting"
-            PropertyChanges { target: settingSheet; y: 0 } 
-        },
-        State { name: "locked" }, 
-        State { name: "popup" }, 
-        State { name: "switchoff" }, 
-        State{
-            name: "drawer"
-            PropertyChanges { target: content; anchors.leftMargin: Tab.DrawerWidth }
-        },
-        State {
-            name: "normal"
-            PropertyChanges { target: content; anchors.leftMargin: 0 }
-            PropertyChanges { target: settingSheet; y: -settingSheet.height + 65 }
-        }
-    ]
+        transitions: [
+            Transition {
+                to: "*"
+                NumberAnimation { target: settingSheet; properties: "y"; duration: 400; easing.type: Easing.InOutQuad; }
+                NumberAnimation { target: content; properties: "anchors.leftMargin"; duration: 300; easing.type: Easing.InOutQuad; }
+            }
+        ]
+    } // end of root 
 
-    transitions: [
-        Transition {
-            to: "*"
-            NumberAnimation { target: settingSheet; properties: "y"; duration: 400; easing.type: Easing.InOutQuad; }
-            NumberAnimation { target: content; properties: "anchors.leftMargin"; duration: 300; easing.type: Easing.InOutQuad; }
-        }
-    ]
-
-}
+} // end of view Window 
