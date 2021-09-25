@@ -11,7 +11,7 @@ Rectangle {
         id: effectSource
         sourceItem: target
         anchors.fill: parent
-        sourceRect: Qt.rect(view.width - width, targetY, width, height)
+        sourceRect: Qt.rect(root.width - width, targetY, width, height)
         clip: true
     }
 
