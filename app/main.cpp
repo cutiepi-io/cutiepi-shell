@@ -78,6 +78,9 @@ int main(int argc, char *argv[])
     RequestInterceptor interceptor;
     QQuickWebEngineProfile adblockProfile;
     adblockProfile.setUrlRequestInterceptor(&interceptor);
+    adblockProfile.setHttpUserAgent("Mozilla/5.0 (X11; CrOS armv7l 10895.56.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.102 Safari/537.36");
+    adblockProfile.setStorageName("Profile");
+    adblockProfile.setOffTheRecord(false);
     engine.rootContext()->setContextProperty("adblockProfile", &adblockProfile);
 #endif
 

@@ -10,14 +10,14 @@ WebEngineView {
     signal openTab(string url)
     signal openNewTab(string url)
 
-    profile: adblockProfile
-/*
+    profile: (typeof(adblockProfile) !== "undefined") ? adblockProfile : defaultProfile 
+
     WebEngineProfile {
+        id: defaultProfile 
         httpUserAgent: "Mozilla/5.0 (X11; CrOS armv7l 10895.56.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.102 Safari/537.36"
         storageName: "Profile"
         offTheRecord: false
     }
-*/
 
     onNewViewRequested: function(request) {
         if (!request.userInitiated) {
