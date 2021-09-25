@@ -56,7 +56,8 @@ Window {
     property bool switchoffScreen: false
 
     property bool batteryCharging: false
-    property variant wallpaperUrl: "file:///usr/share/rpd-wallpaper/temple.jpg" 
+    property variant wallpaperUrl: "file:///usr/share/rpd-wallpaper/boombox.png"
+    property variant wallpaperFontColor: 'white' // '#525353'
 
     property real pitch: 0.0
     property real roll: 0.0
@@ -72,6 +73,7 @@ Window {
         '0': { x: 0, y: 1030, hidden_x: 0, hidden_y: 1280 } 
     } 
 
+    property string mcuVersion: ""
     property string currentTab: ""
     property bool hasTabOpen: (tabModel.count !== 0) && (typeof(Tab.itemMap[currentTab]) !== "undefined")
 
@@ -96,6 +98,8 @@ Window {
             turnScreenOff();
             root.state = "locked";
             process.start("sudo", ["cpufreq-set", "-g", "powersave"]);
+            orientation = 270; 
+            sensorEnabled = false;
         } else {
             turnScreenOn();
             process.start("sudo", ["cpufreq-set", "-g", "conservative"]);
@@ -205,9 +209,10 @@ Window {
         }
         onVersionChanged: {
             console.log("MCU version: " + version)
+            mcuVersion = version;
         }
         Timer { 
-            interval: 1000; repeat: true; running: (mcuInfo.version === ""); onTriggered: mcuInfo.getVersion();
+            interval: 1000; repeat: true; running: (mcuVersion === ""); onTriggered: mcuInfo.getVersion();
         }
     }
 
@@ -1286,23 +1291,23 @@ Window {
                     }
                     drag.target: lockscreen; drag.axis: Drag.YAxis; drag.maximumY: 0
                     onReleased: { 
-                        if (lockscreen.y > -480) { bounce.restart(); } else { root.state = "normal"; lockscreen.y = 0; } 
+                        if (lockscreen.y > -480) { bounce.restart(); } else { root.state = "normal"; lockscreen.y = 0; sensorEnabled = true; } 
                     } 
                 }
                 Timer {
                     id: idleTimer
-                    running: false; interval: 5000;
+                    running: false; interval: 8000;
                     onTriggered: { if (root.state == "locked") screenLocked = true; } // dim the screen after 5s idle 
                 }
                 NumberAnimation { id: bounce; target: lockscreen; properties: "y"; to: 0; easing.type: Easing.InOutQuad; duration: 200 }
                 Text { 
                     id: lockscreenTime
-                    text: Qt.formatDateTime(new Date(), "HH:mm"); color: 'white'; font.pointSize: 26; 
+                    text: Qt.formatDateTime(new Date(), "HH:mm"); color: wallpaperFontColor; font.pointSize: 22; 
                     anchors { left: parent.left; bottom: lockscreenDate.top; leftMargin: 30; bottomMargin: 5 }
                 }
                 Text { 
                     id: lockscreenDate
-                    text: Qt.formatDateTime(new Date(), "dddd, MMMM d"); color: 'white'; font.pointSize: 16; 
+                    text: Qt.formatDateTime(new Date(), "dddd, MMMM d"); color: wallpaperFontColor; font.pointSize: 14; 
                     anchors { left: parent.left; bottom: parent.bottom; margins: 30 }
                 }
             }
@@ -1318,6 +1323,7 @@ Window {
             anchors.left: parent.left
             anchors.leftMargin: 300
             y: -160
+            visible: screenshotTimer.running
             Rectangle {
                 id: notificationContainer
                 width: 480
