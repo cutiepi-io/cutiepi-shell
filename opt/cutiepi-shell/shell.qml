@@ -32,6 +32,8 @@ import QtQuick.VirtualKeyboard.Settings 2.2
 import QtQuick.LocalStorage 2.0
 import QtGraphicalEffects 1.0
 
+import Qt.labs.settings 1.0
+
 import QtSensors 5.11
 
 import MeeGo.Connman 0.2 
@@ -56,7 +58,7 @@ Window {
     property bool switchoffScreen: false
 
     property bool batteryCharging: false
-    property variant wallpaperUrl: "file:///usr/share/rpd-wallpaper/boombox.png"
+    property variant wallpaperUrl: settings.value("wallpaperUrl", "file:///usr/share/rpd-wallpaper/boombox.png");
     property variant wallpaperFontColor: 'white' // '#525353'
 
     property real pitch: 0.0
@@ -77,6 +79,11 @@ Window {
     property string currentTab: ""
     property bool hasTabOpen: (tabModel.count !== 0) && (typeof(Tab.itemMap[currentTab]) !== "undefined")
 
+    property alias systemSettings: settings
+    Settings {
+        id: settings
+    }
+
     Component.onCompleted: {
         mcuInfo.start();
         Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
@@ -92,6 +99,12 @@ Window {
     function turnScreenOff() { setScreenBrightness(0) }
     function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
     function setScreenBrightness(val) { process.start("/opt/cutiepi-shell/assets/setBrightness", [val]); }
+
+    function setSystemClock() {
+        systemClock.text = Qt.formatDateTime(new Date(), formatDateTimeString);
+        lockscreenTime.text = Qt.formatDateTime(new Date(), "HH:mm");
+        lockscreenDate.text = Qt.formatDateTime(new Date(), "dddd, MMMM d"); 
+    }
 
     onScreenLockedChanged: {
         if (screenLocked) {
@@ -220,7 +233,14 @@ Window {
         id: dockingSoundEffect
         source: batteryCharging ? "file:///opt/cutiepi-shell/assets/data_sounds_effects_wav_Dock.wav" 
             : "file:///opt/cutiepi-shell/assets/data_sounds_effects_wav_Undock.wav"
-        onSourceChanged: dockingSoundEffect.play()
+        onSourceChanged: { 
+            dockingSoundEffect.play();
+            turnScreenOn();
+            if (root.state == "locked") { 
+                screenLocked = false;
+                idleTimer.start();
+            }
+        }
     }
 
     Accelerometer {
@@ -613,7 +633,10 @@ Window {
                     visible: ( hasTabOpen && Tab.itemMap[currentTab].loadProgress == 100 && !urlText.focus ) ? true : false 
                     MouseArea {
                         anchors { fill: parent; margins: -10; }
-                        onClicked: { Tab.itemMap[currentTab].reload(); }
+                        onClicked: { 
+                            Tab.itemMap[currentTab].reload(); 
+                            Tab.itemMap[currentTab].updateProfile();
+                        }
                     }
                 }
                 Text {
@@ -1071,19 +1094,18 @@ Window {
                     }
 
                     Text {
+                        id: systemClock
                         font.pointSize: 11
                         text: Qt.formatDateTime(new Date(), formatDateTimeString)
                         color: 'white'
                         anchors.leftMargin: 5
                         Timer { 
+                            id: systemTime
                             repeat: true 
                             interval: 60000
                             running: true 
-                            onTriggered: { 
-                                parent.text = Qt.formatDateTime(new Date(), formatDateTimeString);
-                                lockscreenTime.text = Qt.formatDateTime(new Date(), "HH:mm");
-                                lockscreenDate.text = Qt.formatDateTime(new Date(), "dddd, MMMM d"); 
-                            }
+                            triggeredOnStart: true
+                            onTriggered: setSystemClock();
                         }
                     }
                 }
@@ -1292,12 +1314,18 @@ Window {
                     drag.target: lockscreen; drag.axis: Drag.YAxis; drag.maximumY: 0
                     onReleased: { 
                         if (lockscreen.y > -480) { bounce.restart(); } else { root.state = "normal"; lockscreen.y = 0; sensorEnabled = true; } 
+                        idleTimer.restart();
                     } 
                 }
                 Timer {
                     id: idleTimer
                     running: false; interval: 8000;
-                    onTriggered: { if (root.state == "locked") screenLocked = true; } // dim the screen after 5s idle 
+                    onTriggered: { 
+                        if (root.state == "locked") { // dim the screen after 8s idle 
+                            screenLocked = true; 
+                            turnScreenOff();
+                        }
+                    } 
                 }
                 NumberAnimation { id: bounce; target: lockscreen; properties: "y"; to: 0; easing.type: Easing.InOutQuad; duration: 200 }
                 Text { 
@@ -1320,10 +1348,9 @@ Window {
             id: notification
             width: notificationContainer.width + 55
             height: notificationContainer.height + 55
-            anchors.left: parent.left
-            anchors.leftMargin: 300
+            anchors.horizontalCenter: parent.horizontalCenter
             y: -160
-            visible: screenshotTimer.running
+            visible: (showAnimation.running || hideAnimation.running || notificationTimer.running)
             Rectangle {
                 id: notificationContainer
                 width: 480
@@ -1344,7 +1371,7 @@ Window {
                 }
             }
 
-            NumberAnimation{
+            NumberAnimation {
                 id: showAnimation
                 target: notification
                 properties: "y"
@@ -1352,7 +1379,7 @@ Window {
                 duration: 500
             }
 
-            NumberAnimation{
+            NumberAnimation {
                 id: hideAnimation
                 target: notification
                 properties: "y"
