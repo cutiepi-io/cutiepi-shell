@@ -57,7 +57,7 @@ public:
     {
         if (client.matches(info.requestUrl().toString().toStdString().c_str(), 
             FONoFilterOption, info.requestUrl().host().toStdString().c_str())) {
-                qDebug() << "Blocked: " << info.requestUrl();
+                //qDebug() << "Blocked: " << info.requestUrl();
                 info.block(true);
         }
     }
