@@ -10,7 +10,13 @@ WebEngineView {
     signal openTab(string url)
     signal openNewTab(string url)
 
-    profile: (typeof(adblockProfile) !== "undefined") ? adblockProfile : defaultProfile 
+    profile: ((typeof(adblockProfile) !== "undefined") && 
+        view.systemSettings.value("enableAdblocker", true)) ? adblockProfile : defaultProfile
+
+    function updateProfile() {
+        webView.profile = ((typeof(adblockProfile) !== "undefined") && 
+        view.systemSettings.value("enableAdblocker", true)) ? adblockProfile : defaultProfile
+    }
 
     WebEngineProfile {
         id: defaultProfile 
