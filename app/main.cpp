@@ -69,8 +69,19 @@ private:
 
 int main(int argc, char *argv[])
 {
+    qputenv("QT_IM_MODULE", "qtvirtualkeyboard");
+    qputenv("QT_QPA_PLATFORM", "eglfs");
+    qputenv("QT_QPA_EGLFS_INTEGRATION", "eglfs_kms");
+
+    qputenv("XDG_RUNTIME_DIR", "/run/user/1000");
+    qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
+
     QtWebEngine::initialize();
     QGuiApplication app(argc, argv);
+
+    app.setOrganizationName("CutiePi");
+    app.setOrganizationDomain("cutiepi.io");
+    app.setApplicationName("Shell");
 
     QQmlApplicationEngine engine;
 
