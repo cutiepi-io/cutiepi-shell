@@ -25,7 +25,7 @@ Rectangle {
                 id: content
                 anchors.fill: parent
                 anchors.margins: 50
-                anchors.topMargin: 100
+                anchors.topMargin: 60
                 spacing: 10
 
                 Rectangle {
@@ -74,11 +74,17 @@ Rectangle {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
                                     }
-                                } 
+                                }
                                 Switch { 
                                     anchors {
                                         right: parent.right
                                         verticalCenter: parent.verticalCenter
+                                    }
+                                    onCheckedChanged: { 
+                                        if (checked) 
+                                            command.start("sudo", ["rfkill", "block", "all"]);
+                                        else
+                                            command.start("sudo", ["rfkill", "unblock", "all"]);
                                     }
                                 }
                             }
@@ -101,7 +107,7 @@ Rectangle {
                                         verticalCenter: parent.verticalCenter
                                     }
                                     horizontalAlignment: Text.AlignRight
-                                    text: "Asia/Tokyo"
+                                    text: settings.value("timezone", "UTC");
                                     font.pointSize: 8
                                     rightPadding: 20 
                                     MouseArea {
@@ -114,8 +120,11 @@ Rectangle {
                                     id: timeZoneMenu
                                     rotation: view.orientation 
                                     onTimeZoneSelected: {
-                                        timeZoneText.text = text 
-                                        timeZoneMenu.visible = false
+                                        timeZoneMenu.visible = false;
+                                        settings.setValue("timezone", text);
+                                        timeZoneText.text = settings.value("timezone");
+                                        command.start("sudo", ["timedatectl", "set-timezone", settings.value("timezone")]);
+                                        view.setSystemClock();
                                     }
                                 }
                             }
@@ -153,6 +162,13 @@ Rectangle {
                                     snapMode: Slider.SnapAlways	
                                     stepSize: 1
                                     value: 1
+                                    onValueChanged: {
+                                        switch(powerModeSlider.value) {
+                                            case 0: command.start("sudo", ["cpufreq-set", "-g", "powersave"]); break;
+                                            case 1: command.start("sudo", ["cpufreq-set", "-g", "conservative"]); break;
+                                            case 2: command.start("sudo", ["cpufreq-set", "-g", "performance"]); break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -177,7 +193,7 @@ Rectangle {
                             left: parent.left 
                             margins: 25
                         }
-                        text: "Interface" 
+                        text: "Appearance" 
                         color: '#5C5C5C'
                         font.pointSize: 10
                     }
@@ -213,10 +229,12 @@ Rectangle {
                                     }
                                 } 
                                 Switch { 
+                                    checked: settings.value("enableAdblocker", true);
                                     anchors {
                                         right: parent.right
                                         verticalCenter: parent.verticalCenter
                                     }
+                                    onCheckedChanged: { settings.setValue("enableAdblocker", checked) }
                                 }
                             }
                             Rectangle {
@@ -253,7 +271,8 @@ Rectangle {
                                         rotation: view.orientation
                                         anchors.centerIn: parent
                                         onWallpaperSelected: { 
-                                            view.wallpaperUrl = fileName 
+                                            settings.setValue("wallpaperUrl", fileName);
+                                            view.wallpaperUrl = settings.value("wallpaperUrl");
                                             wallpaperDialog.visible = false
                                         }
                                     }
@@ -266,6 +285,12 @@ Rectangle {
                                     anchors {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
+                                    }
+                                    Text { 
+                                        font.pointSize: 7; 
+                                        color: '#5C5C5C'
+                                        text: "Effective after reboot"
+                                        anchors { top: parent.bottom; topMargin: 5 } 
                                     }
                                 }
                                 ColumnLayout {
@@ -284,6 +309,12 @@ Rectangle {
                                             verticalAlignment: Text.AlignVCenter
                                             leftPadding: parent.indicator.width + parent.spacing
                                         }
+                                        onCheckedChanged: {
+                                            if (checked)
+                                                command.start("sudo", ["/usr/local/bin/set-cutiepi-shell-default.sh"]);
+                                            else
+                                                command.start("sudo", ["/usr/local/bin/set-lightdm-default.sh"]);
+                                        }
                                     }
                                     RadioButton {
                                         text: "PIXEL Desktop"
@@ -300,18 +331,27 @@ Rectangle {
                             Rectangle {
                                 width: parent.width - 50; height: 60 
                                 Rectangle {
+                                    id: switchDesktopButton
                                     width: 280
                                     height: 50
-                                    color: '#4875E2'
+                                    color: switchDesktopMouseArea.enabled ? '#4875E2' : 'darkgray' 
                                     anchors {
                                         right: parent.right
                                         bottom: parent.bottom
                                     }
                                     radius: 6
-                                    Text { anchors.centerIn: parent; text: "Switch to Desktop now"; font.pointSize: 8; color: 'white' }
-                                    MouseArea { 
+                                    Text { 
+                                        anchors.centerIn: parent; 
+                                        text: switchDesktopMouseArea.enabled ? "Switch to Desktop now" : "Loading..." ; 
+                                        font.pointSize: 8; color: 'white' 
+                                    }
+                                    MouseArea {
+                                        id: switchDesktopMouseArea
                                         anchors.fill: parent
-                                        onClicked: command.start("/usr/local/bin/start-lightdm.sh", []);
+                                        onClicked: { 
+                                            command.start("/usr/local/bin/start-lightdm.sh", []);
+                                            enabled = false;
+                                        }
                                     }
                                 }
                             }
