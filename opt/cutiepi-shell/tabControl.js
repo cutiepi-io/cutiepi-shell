@@ -132,7 +132,7 @@ function fixUrl(url) {
         return str.substring(0, n)+url.substring(1);
     }
     //FIXME: search engine support here
-    if (url.startsWith('chrome://')) { return url; } 
+    if (url.startsWith('chrome://') || url.startsWith('file://')) { return url; } 
     if (url.indexOf('.') < 0) { return "https://duckduckgo.com/?q="+url; }
     if (url.indexOf(":") < 0) { return "https://"+url; } 
     else { return url;}
