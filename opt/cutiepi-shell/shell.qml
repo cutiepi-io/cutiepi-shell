@@ -1,6 +1,6 @@
 /*
-    Copyright (C) 2019-2020 Ping-Hsun "penk" Chen
-    Copyright (C) 2020 Chouaib Hamrouche
+    Copyright (C) 2021 Penk Chen
+    Copyright (C) 2021 Chouaib Hamrouche
 
     Contact: hello@cutiepi.io
 
@@ -21,13 +21,18 @@
 
 */
 
-import QtQuick 2.12
+import QtQuick 2.15
+import QtQuick.Window 2.15
 import QtQuick.Controls 2.1
+import QtMultimedia 5.15 
+
 import QtWebEngine 1.7
 import QtQuick.VirtualKeyboard 2.2
 import QtQuick.VirtualKeyboard.Settings 2.2
 import QtQuick.LocalStorage 2.0
 import QtGraphicalEffects 1.0
+
+import Qt.labs.settings 1.0
 
 import QtSensors 5.11
 
@@ -38,48 +43,95 @@ import McuInfo 1.0
 import Process 1.0
 import "tabControl.js" as Tab 
 
-Item {  
-    id: root
+Window {  
+    id: view
     width: 800
     height: 1280
-    Rectangle { anchors.fill: parent; color: '#2E3440' }
+    visible: true
+
+    Rectangle { anchors.fill: parent; color: '#ececec' }
 
     property variant formatDateTimeString: "HH:mm"
     property variant batteryPercentage: ""
     property variant queue: []
     property bool screenLocked: false
+    property bool switchoffScreen: false
+
     property bool batteryCharging: false
-    property variant wallpaperUrl: "file:///usr/share/rpd-wallpaper/temple.jpg" 
+    property variant wallpaperUrl: settings.value("wallpaperUrl", "file:///usr/share/rpd-wallpaper/boombox.png");
+    property variant wallpaperFontColor: 'white' // '#525353'
 
     property real pitch: 0.0
     property real roll: 0.0
     readonly property double radians_to_degrees: 180 / Math.PI
-    property variant orientation: 270 
-    property variant sensorEnabled: true 
 
+    property variant orientation: 270
+    property variant portraitMode: (orientation === 180 || orientation === 0)
+    property variant sensorEnabled: true 
+    property variant keyboardPosition: { 
+        '270': { x: -40, y: 440, hidden_x: 360, hidden_y: 440 }, 
+        '180': { x: 0,  y: 0, hidden_x: 0, hidden_y: -250 }, 
+        '90': { x: -440, y: 440, hidden_x: -840, hidden_y: 440 }, 
+        '0': { x: 0, y: 1030, hidden_x: 0, hidden_y: 1280 } 
+    } 
+
+    property string mcuVersion: ""
     property string currentTab: ""
     property bool hasTabOpen: (tabModel.count !== 0) && (typeof(Tab.itemMap[currentTab]) !== "undefined")
 
+    property alias systemSettings: settings
+    Settings {
+        id: settings
+    }
+
     Component.onCompleted: {
         mcuInfo.start();
+        Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
+        process.start("rfkill", ["unblock", "all"]);
+
+        setScreenBrightness(100);
+        setAudioVolume(80);
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
+
+    function turnScreenOn() { setScreenBrightness(50 + brightnessSlider.value) }
+    function turnScreenOff() { setScreenBrightness(0) }
+    function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
+    function setScreenBrightness(val) { process.start("/opt/cutiepi-shell/assets/setBrightness", [val]); }
+
+    function setSystemClock() {
+        systemClock.text = Qt.formatDateTime(new Date(), formatDateTimeString);
+        lockscreenTime.text = Qt.formatDateTime(new Date(), "HH:mm");
+        lockscreenDate.text = Qt.formatDateTime(new Date(), "dddd, MMMM d"); 
+    }
+
     onScreenLockedChanged: {
         if (screenLocked) {
-            process.start("raspi-gpio", ["set", "12", "dl"]);
+            turnScreenOff();
             root.state = "locked";
-            lockscreenMosueArea.enabled = false; 
+            process.start("sudo", ["cpufreq-set", "-g", "powersave"]);
+            orientation = 270; 
+            sensorEnabled = false;
         } else {
-            process.start("raspi-gpio", ["set", "12", "dh"]);
-            lockscreenMosueArea.enabled = true; 
+            turnScreenOn();
+            process.start("sudo", ["cpufreq-set", "-g", "conservative"]);
+        }
+    }
+
+    onSwitchoffScreenChanged: {
+        turnScreenOn();
+        if (switchoffScreen) {
+            root.state = "switchoff";
+        } else {
+            root.state = "normal"
         }
     }
 
     Timer {
         id: scanTimer
         interval: (root.state == "setting") ? 5000 : 30000
-        running: networkingModel.powered 
+        running: networkingModel.powered && ( root.state !== "locked" )
         repeat: true
         triggeredOnStart: true
         onTriggered: {
@@ -136,34 +188,57 @@ Item {
         portBaudRate: 115200
 
         property variant batteryAttributes: 
-            { '4.20': 100, '4.15': 95, '4.11': 90, '4.08': 85, '4.02': 80, '3.98': 75, '3.95': 70, 
-              '3.91': 65, '3.87': 60, '3.85': 55, '3.84': 50, '3.82': 45, '3.80': 40, '3.79': 35, 
-              '3.77': 30, '3.75': 25, '3.73': 20, '3.71': 15, '3.69': 10, '3.61': 5, '3.27': 0 }
+            { '4.20': 100, '3.99': 95, '3.97': 90, '3.92': 85, '3.87': 80, '3.83': 75, '3.79': 70, 
+              '3.75': 65, '3.73': 60, '3.70': 55, '3.68': 50, '3.66': 45, '3.65': 40, '3.63': 35, 
+              '3.62': 30, '3.60': 25, '3.58': 20, '3.545': 15, '3.51': 10, '3.42': 5, '3.00': 0 }
 
         onButtonChanged: {
-            screenLocked = !screenLocked
+            if (button == 1)
+                screenLocked = !screenLocked;
+            if (button == 3)
+                switchoffScreen = true;
         }
         onBatteryChanged: {
-            if (battery > 5) { 
-                var currentVol = (battery/1000).toFixed(2); 
-                var sum = 0; 
-                queue.push(currentVol); 
-                if (queue.length > 10)
-                    queue.shift()
-                for (var i = 0; i < queue.length; i++) {
-                    sum += parseFloat(queue[i])
+            var currentVol = (battery/1000).toFixed(2); 
+            var sum = 0; 
+            queue.push(currentVol); 
+            if (queue.length > 10)
+                queue.shift()
+            for (var i = 0; i < queue.length; i++) {
+                sum += parseFloat(queue[i])
+            }
+            var meanVol = (sum/queue.length).toFixed(2);
+            for (var vol in batteryAttributes) {
+                if (meanVol >= parseFloat(vol)) { 
+                    var volPercent = batteryAttributes[vol];
+                    batteryPercentage = volPercent
+                    break;
                 }
-                var meanVol = (sum/queue.length).toFixed(2);
-                for (var vol in batteryAttributes) {
-                    if (meanVol >= parseFloat(vol)) { 
-                        var volPercent = batteryAttributes[vol];
-                        batteryPercentage = volPercent // + "(" + meanVol + "V)"
-                        break;
-                    }
-                }
-            } else { // temporary hack for charging signal 
-                if (battery == 4) batteryCharging = true 
-                if (battery == 5) batteryCharging = false 
+            }
+        }
+        onChargeChanged: {
+            if (charge == 4) batteryCharging = true 
+            if (charge == 5) batteryCharging = false 
+        }
+        onVersionChanged: {
+            console.log("MCU version: " + version)
+            mcuVersion = version;
+        }
+        Timer { 
+            interval: 1000; repeat: true; running: (mcuVersion === ""); onTriggered: mcuInfo.getVersion();
+        }
+    }
+
+    SoundEffect {
+        id: dockingSoundEffect
+        source: batteryCharging ? "file:///opt/cutiepi-shell/assets/data_sounds_effects_wav_Dock.wav" 
+            : "file:///opt/cutiepi-shell/assets/data_sounds_effects_wav_Undock.wav"
+        onSourceChanged: { 
+            dockingSoundEffect.play();
+            turnScreenOn();
+            if (root.state == "locked") { 
+                screenLocked = false;
+                idleTimer.start();
             }
         }
     }
@@ -171,10 +246,10 @@ Item {
     Accelerometer {
         id: accel
         active: sensorEnabled
-        dataRate: 100
+        dataRate: 30
         onReadingChanged: {
             var accX = accel.reading.x
-            var accY = accel.reading.y - 2 //experimental calibration
+            var accY = accel.reading.y
             var accZ = -accel.reading.z
 
             var pitchAcc = Math.atan2(accY, accZ)*radians_to_degrees;
@@ -183,22 +258,26 @@ Item {
             pitch = pitch * 0.98 + pitchAcc * 0.02;
             roll = roll * 0.98 + rollAcc * 0.02;
             
+            var tmp = orientation;
+
             //update orientation
             if(pitch >= 30.0)
-                orientation = 0
+                tmp = 0
             else if(pitch <= -30.0)
-                orientation = 180
+                tmp = 180
             if(roll >= 30.0)
-                orientation = 270
+                tmp = 270
             else if(roll <= -30.0)
-                orientation = 90 
+                tmp = 90 
+
+            orientation = tmp;
         }
     }
 
     Gyroscope {
         id: gyro
         active: sensorEnabled
-        dataRate: 100
+        dataRate: 30
         onReadingChanged: {
             //integrate gyro rates to update angles (pitch and roll)
             var dt=0.01 //10ms
@@ -208,30 +287,32 @@ Item {
     }
 
     Rectangle {
-        id: view
-        color: '#2E3440'
-        width: (orientation == 180 || orientation == 0) ? 800 : 1280
-        height: (orientation == 180 || orientation == 0) ? 1280 : 800 
+        id: root
+        color: "#ececec"
+        width: portraitMode ? 800 : 1280
+        height: portraitMode ? 1280 : 800 
 
         FontLoader {
-            id: icon
+            id: fontAwesome
             source: "file:///opt/cutiepi-shell/Font Awesome 5 Free-Solid-900.otf" 
         }
 
         // control the rotation of view 
-        x: (orientation == 180 || orientation == 0) ? 0 : -240 
-        y: (orientation == 180 || orientation == 0) ? 0 : 240
+        x: portraitMode ? 0 : -240
+        y: portraitMode ? 0 : 240
         rotation: orientation
         Behavior on rotation {
-            //NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
+            RotationAnimator { duration: 150; easing.type: Easing.InOutQuad; direction: RotationAnimator.Shortest }
         }
 
         Rectangle {
             id: sidebar  
-            height: parent.height 
-            width: Tab.DrawerWidth 
-            anchors { left: parent.left; top: parent.top }
-            color: "#2E3440"
+            height: parent.height + 4
+            width: Tab.DrawerWidth + 4
+            anchors { left: parent.left; margins: -2; leftMargin: -4; top: parent.top }
+            color: '#ececec'
+            border.width: 2
+            border.color: '#c5c5c3'
 
             ListModel { id: tabModel }
             Component {
@@ -239,7 +320,7 @@ Item {
                 Row {
                     spacing: 10
                     Rectangle {
-                        width: Tab.DrawerWidth
+                        width: Tab.DrawerWidth + 2
                         height: 50 
                         color: "transparent"
                         Image { 
@@ -250,10 +331,10 @@ Item {
                         Text { 
                             text: (typeof(Tab.itemMap[model.pageid]) !== "undefined" && Tab.itemMap[model.pageid].title !== "") ? 
                             Tab.itemMap[model.pageid].title : "Loading..";
-                            color: "white"; 
+                            color: "#3e3e3e" 
                             font.pointSize: 7
                             anchors { left: parent.left; margins: Tab.DrawerMargin; verticalCenter: parent.verticalCenter
-                                leftMargin: Tab.DrawerMargin+30; right: parent.right; rightMargin: 36 } 
+                                leftMargin: Tab.DrawerMargin+30; right: parent.right; rightMargin: 38 } 
                             elide: Text.ElideRight 
                         }
                         MouseArea { 
@@ -271,9 +352,9 @@ Item {
                             anchors { right: parent.right; top: parent.top}
                             Text {  // closeTab button
                                 visible: tabListView.currentIndex === index
-                                anchors { top: parent.top; right: parent.right; margins: Tab.DrawerMargin }
+                                anchors { top: parent.top; right: parent.right; margins: Tab.DrawerMargin; topMargin: Tab.DrawerMargin - 2 }
                                 text: "\uF057"
-                                font.family: icon.name
+                                font.family: fontAwesome.name
                                 font.pointSize: 10
                                 color: "gray"
 
@@ -296,12 +377,12 @@ Item {
                     height: 80
                     color: "transparent"
                     Text { 
-                        text: "\uF067"; font.family: icon.name; color: "white"; font.pointSize: 10
+                        text: "\uF067"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
                     }
                     Text { 
                         text: "<b>New Tab</b>"
-                        color: "white"
+                        color: "#3e3e3e"
                         font.pointSize: 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 70; }
                     }
@@ -312,7 +393,7 @@ Item {
                             Tab.openNewTab("page-"+Tab.salt(), Tab.HomePage); 
                         }
                         onPressAndHold: {
-                            Tab.openNewTermTab("page-"+Tab.salt());
+                            Tab.openNewAppTab("page-"+Tab.salt(), 'terminal');
                         }
                     }
                 }
@@ -321,13 +402,7 @@ Item {
                 delegate: tabDelegate 
                 highlight: Rectangle { 
                     width: Tab.DrawerWidth; height: Tab.DrawerHeight + 10 
-                    gradient: Gradient {
-                        GradientStop { position: 0.1; color: "#1F1F23" }
-                        GradientStop { position: 0.5; color: "#28282F" }
-                        GradientStop { position: 0.8; color: "#2A2B31" }
-                        GradientStop { position: 1.0; color: "#25252A" }
-
-                    }
+                    color: "#d4d4d4"
                 }
                 add: Transition {
                     NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
@@ -337,15 +412,38 @@ Item {
                 }
                 highlightMoveDuration: 2
                 highlightFollowsCurrentItem: true 
+                footer: Rectangle { 
+                    width: Tab.DrawerWidth
+                    height: 80
+                    color: "transparent"
+                    Text { 
+                        text: "\uF013"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: 10
+                        anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
+                    }
+                    Text { 
+                        text: "<b>Settings</b>"
+                        color: '#3e3e3e'
+                        font.pointSize: 10
+                        anchors { top: parent.top; left: parent.left; margins: 18; leftMargin: 70; }
+                    }
+                    MouseArea { 
+                        anchors.fill: parent; 
+                        enabled: (root.state == "drawer") 
+                        onClicked: {
+                            Tab.goToSetting();
+                        }
+                    }
+                }
+                footerPositioning: ListView.OverlayFooter
             }
         }
 
         Rectangle { 
             id: content 
-            width: parent.width
+            width: parent.width 
             height: parent.height 
-            anchors { left: parent.left; top: parent.top }
-            color: "#D8DEE9"
+            anchors { left: parent.left; top: parent.top; }
+            color: "#f7f6f4"
             
             SequentialAnimation { 
                 id: tabBounce 
@@ -373,35 +471,63 @@ Item {
             Component {
                 id: tabTermView
                 Yat.Screen { 
-                    property variant url: "term://"
+                    id: terminal
+                    property variant url: "cutiepi://terminal"
                     property variant canGoBack: false 
                     property variant title: "Terminal" 
                     property variant icon: "icons/terminal-512.png"
-                    id: terminal
                     anchors.fill: parent 
                     anchors.topMargin: 85
                     font.pointSize: 8 
+                    z: 0
                 }
             } 
+            Component {
+                id: tabFactoryModeView 
+                FactoryMode {
+                    id: factoryMode
+                    property variant url: "cutiepi://factorymode"
+                    property variant canGoBack: false 
+                    property variant title: "Factory Testing Mode" 
+                    property variant icon: "icons/terminal-512.png"
+                    anchors.fill: parent 
+                    anchors.topMargin: 85
+                    z: 0 
+                }
+            }
+            Component {
+                id: tabSettingView 
+                SettingView {
+                    id: settingView
+                    property variant url: "cutiepi://setting"
+                    property variant canGoBack: false 
+                    property variant title: "Settings" 
+                    property variant icon: "icons/terminal-512.png"
+                    anchors.fill: parent 
+                    anchors.topMargin: 85
+                    z: 0 
+                }
+            }
 
             // navi bar 
             Rectangle {
                 id: naviBar
-                color: "#ECEFF4"
+                color: "#f7f6f4"
                 width: parent.width 
                 height: 85
                 anchors {
                     top: parent.top
                     right: parent.right
                 }
+                z: 1
 
                 // hamburger button 
                 Text {
                     id: hamburgerButton
                     font.pointSize: 14
-                    font.family: icon.name 
+                    font.family: fontAwesome.name 
                     text: "\uf0c9"
-                    color: "#434C5E"
+                    color: '#3e3e3e'
                     anchors {
                         left: parent.left; margins: 22; verticalCenter: parent.verticalCenter;
                     }
@@ -416,21 +542,21 @@ Item {
                     }
                 }
 
-                // controls and label for terminal tab, only visible if it's terminal 
+                // controls and label for app tabs, only visible if it's an app 
                 Text { 
-                    visible: hasTabOpen && (Tab.itemMap[currentTab].url == "term://")
+                    visible: hasTabOpen && (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                     anchors {  left: hamburgerButton.right; leftMargin: 30; verticalCenter: parent.verticalCenter } 
-                    text: "Terminal"; color: "#434C5E"; font.pointSize: 12
+                    text: Tab.itemMap[currentTab].title; color: "#3e3e3e"; font.pointSize: 12
                 }
 
                 Item {
                     id: backButton
                     width: 30; height: 30; anchors { left: hamburgerButton.right; margins: 20; top: parent.top; topMargin: 22 }
-                    visible: !hasTabOpen || Tab.itemMap[currentTab].url !== "term://"
+                    visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                     Text { 
                         id: backButtonIcon
                         text: "\uF053" 
-                        font { family: icon.name; pointSize: 15 }
+                        font { family: fontAwesome.name; pointSize: 15 }
                         color: hasTabOpen ? (Tab.itemMap[currentTab].canGoBack ? "#434C5E" : "lightgray") : "lightgray"
                     }
 
@@ -449,19 +575,20 @@ Item {
                 id: urlBar
                 width: parent.width - 510
                 height: 55
-                color: "#D8DEE9"; border.width: 0; border.color: "#2E3440";
-                visible: !hasTabOpen || Tab.itemMap[currentTab].url !== "term://"
+                color: "#e7e7e5"
+                visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                 anchors {
                     top: parent.top
                     left: parent.left
                     margins: 20; topMargin: 15; leftMargin: 125
                 }
                 radius: 26
+                z: 1
 
                 TextInput { 
                     id: urlText
                     text: hasTabOpen ? Tab.itemMap[currentTab].url : ""
-                    font.pointSize: 9; color: "#2E3440"; selectionColor: "#434C5E"
+                    font.pointSize: 9; color: "#2E3440"; selectionColor: "#4875E2"
                     anchors { left: parent.left; top: parent.top; right: stopButton.left; margins: 11; }
                     height: parent.height
                     inputMethodHints: Qt.ImhNoAutoUppercase // url hint 
@@ -489,7 +616,7 @@ Item {
                     id: stopButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF00D"
-                    font { family: icon.name; pointSize: 12 }
+                    font { family: fontAwesome.name; pointSize: 12 }
                     color: "gray"
                     visible: ( hasTabOpen && Tab.itemMap[currentTab].loadProgress < 100 && !urlText.focus) ? true : false
                     MouseArea {
@@ -501,19 +628,22 @@ Item {
                     id: reloadButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF01E"
-                    font { family: icon.name; pointSize: 8 }
+                    font { family: fontAwesome.name; pointSize: 8 }
                     color: "gray"
                     visible: ( hasTabOpen && Tab.itemMap[currentTab].loadProgress == 100 && !urlText.focus ) ? true : false 
                     MouseArea {
                         anchors { fill: parent; margins: -10; }
-                        onClicked: { Tab.itemMap[currentTab].reload(); }
+                        onClicked: { 
+                            Tab.itemMap[currentTab].reload(); 
+                            Tab.itemMap[currentTab].updateProfile();
+                        }
                     }
                 }
                 Text {
                     id: clearButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF057"
-                    font { family: icon.name; pointSize: 12 }
+                    font { family: fontAwesome.name; pointSize: 12 }
                     color: "gray"
                     visible: urlText.focus
                     MouseArea {
@@ -542,7 +672,7 @@ Item {
                 smooth: true;
                 source: suggestionContainer;
             }
-
+	
             MouseArea { 
                 id: overlayMouseArea 
                 anchors.fill: parent 
@@ -560,19 +690,20 @@ Item {
                 id: urlProgressBar 
                 height: 4
                 visible: (hasTabOpen && Tab.itemMap[currentTab].loadProgress < 100)
-                width: parent.width * (Tab.itemMap[currentTab].loadProgress/100)
+                width: (typeof(Tab.itemMap[currentTab]) !== "undefined") ? parent.width * (Tab.itemMap[currentTab].loadProgress/100) : 0
                 anchors { bottom: naviBar.bottom; left: parent.left }
                 color: "#bf616a" 
+                z: 1
             }
 
             Rectangle { 
-                width: 10; height: 10; color: "#2E3440"; anchors { top: parent.top; right: setting.left }
+                width: 10; height: 10; z: 1; color: "#989897"; anchors { top: parent.top; right: setting.left } 
             }
             Rectangle { 
-                width: 24; height: 24; color: "#ECEFF4"; radius: 12; anchors { top: parent.top; right: setting.left }
+                width: 24; height: 24; z: 1; color: "#f7f6f4"; radius: 12; anchors { top: parent.top; right: setting.left }
             }
             Rectangle { 
-                width: setting.width - 20; height: 65 + 25; color: "#2E3440"; 
+                width: setting.width - 20; height: 65 + 25; color: "#989897"; z: 1;
                 anchors { top: parent.top; right: parent.right; topMargin: -25 } radius: 22 
             }
 
@@ -580,18 +711,25 @@ Item {
             Rectangle {
                 id: settingSheet
                 width: setting.width - 20 
-                height: 600 
-                color: "#2E3440"
-                anchors { right: parent.right;  }
-                y: -600
+                height: 660
+                color: '#989897'
+                anchors { right: parent.right; }
+                y: -height - 20
                 radius: 22
                 z: 3 
+
+                BlurPanel {
+                    target: Tab.itemMap[currentTab]
+                    property variant targetY: parent.y
+                    anchors.fill: parent
+                    anchors.topMargin: 85
+                }
 
                 // volume bar
                 Rectangle{
                     id: volumeBar
                     anchors{
-                        topMargin: 75
+                        topMargin: 95
                         top: parent.top
                         left: parent.left
                         right: parent.right
@@ -622,44 +760,37 @@ Item {
                         }
                     }
 
-                    Rectangle{
-                        id: volumeBarTrack
-                        anchors{
-                            verticalCenter: parent.verticalCenter
-                            right: volumeHigh.left
-                            left: volumeMuted.right
-                            rightMargin: 20
-                            leftMargin: 20
+                    Slider { 
+                        id: volumeSlider
+                        from: 0; to: 100; stepSize: 20; value: 80; 
+                        anchors { left: volumeMuted.right; right: volumeHigh.left; verticalCenter: parent.verticalCenter; margins: 10 } 
+                        background: Rectangle {
+                            x: volumeSlider.leftPadding
+                            y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
+                            implicitWidth: 200
+                            implicitHeight: 4
+                            width: volumeSlider.availableWidth
+                            height: implicitHeight
+                            radius: 2
+                            color: "#bdbebf"
+
+                            Rectangle {
+                                width: volumeSlider.visualPosition * parent.width
+                                height: parent.height
+                                color: "#4875E2"
+                                radius: 2
+                            }
                         }
-                        height: 2
-                        radius: 1
-                        color: "#ECEFF4"
-                    }
-
-                    Rectangle{
-                        id: volumeBarThumb
-                        height: 30
-                        width: 30
-                        radius: 15
-                        y: volumeBarTrack.y - height/2
-                        x: volumeBarTrack.x + volumeBarTrack.width/2
-
-                        MouseArea{
-                            anchors.fill: parent
-                            drag.target: volumeBarThumb; drag.axis: Drag.XAxis; drag.minimumX: volumeBarTrack.x; drag.maximumX: volumeBarTrack.x - width + volumeBarTrack.width
-                        }
-
-                        onXChanged: {
-                            var fullrange = volumeBarTrack.width - volumeBarThumb.width
-                            var vol = 100*(volumeBarThumb.x - volumeBarTrack.x)/fullrange
-                            if(vol <= 2)
+                        onValueChanged: {
+                            if (value == 0)
                                 audio.source = "icons/audio-volume-muted-symbolic.svg"
-                            else if(vol < 25)
+                            else if (value <= 60)
                                 audio.source = "icons/audio-volume-low-symbolic.svg"
-                            else if(vol < 75)
+                            else if (value <= 80)
                                 audio.source = "icons/audio-volume-medium-symbolic.svg"
                             else
                                 audio.source = "icons/audio-volume-high-symbolic.svg"
+                            setAudioVolume(value);
                         }
                     }
                 }
@@ -668,7 +799,7 @@ Item {
                 Rectangle{
                     id: orientationLock
                     anchors{
-                        topMargin: 10
+                        topMargin: 20
                         top: volumeBar.bottom
                         left: parent.left
                         right: parent.right
@@ -680,11 +811,11 @@ Item {
 
                     Text {
                         text: "Orientation Lock"
-                        color: "#ECEFF4"
+                        color: "white"
                         anchors{
                             verticalCenter: parent.verticalCenter
                             left: parent.left
-                            leftMargin: 10
+                            leftMargin: 15
                         }
                         font.pointSize: 9
                     }
@@ -699,7 +830,7 @@ Item {
                         width: 60
                         height: 30
                         radius: 15
-                        color: sensorEnabled ? "grey" : "limegreen"
+                        color: sensorEnabled ? "grey" : "#4875E2"
 
                         Rectangle{
                             id: toggleThumb
@@ -738,14 +869,73 @@ Item {
                     }
                 }
 
+                Rectangle{
+                    id: brightnessControl
+                    anchors{
+                        topMargin: 20
+                        top: orientationLock.bottom
+                        left: parent.left
+                        right: parent.right
+                    }
+
+                    width: parent.width - 25
+                    height: 40
+                    color: "transparent"
+
+                        Text {
+                            id: brightnessIcon
+                            text: "\uf0eb"
+                            font.family: fontAwesome.name
+                            color: "white"
+                            anchors{
+                                verticalCenter: parent.verticalCenter
+                                left: parent.left
+                                leftMargin: 20
+                            }
+                            font.pointSize: 10
+                        }
+                        Slider { 
+                            id: brightnessSlider
+                            from: 0; to: 50; stepSize: 10; value: 50; 
+                            anchors {
+                                left: brightnessIcon.right
+                                leftMargin: 15
+                                right: parent.right
+                                rightMargin: 15
+                                verticalCenter: parent.verticalCenter
+
+                            }
+                            background: Rectangle {
+                                x: brightnessSlider.leftPadding
+                                y: brightnessSlider.topPadding + brightnessSlider.availableHeight / 2 - height / 2
+                                implicitWidth: 200
+                                implicitHeight: 4
+                                width: brightnessSlider.availableWidth
+                                height: implicitHeight
+                                radius: 2
+                                color: "#bdbebf"
+
+                                Rectangle {
+                                    width: brightnessSlider.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#4875E2"
+                                    radius: 2
+                                }
+                            }
+                            onValueChanged: {
+                                setScreenBrightness(50+value)
+                            }
+		                }
+                }
+
                 // separator
                 Rectangle{
                     id: separator
                     anchors{
                         right: parent.right
                         left:parent.left
-                        top: orientationLock.bottom
-                        topMargin: 10
+                        top: brightnessControl.bottom
+                        topMargin: 20
                         leftMargin: 20; rightMargin: 20
                     }
                     height: 1
@@ -768,7 +958,7 @@ Item {
                     model: networkingModel
                     delegate: Rectangle {
                         height: 45
-                        width: parent.width 
+                        width: wifiListView.visible ? wifiListView.width : 0
                         color: 'transparent' 
                         Row {
                             width: parent.width - 40 
@@ -781,17 +971,17 @@ Item {
                                 color: 'transparent'
                                 anchors.verticalCenter: parent.verticalCenter
                                 Text {
-                                    font.family: icon.name 
+                                    font.family: fontAwesome.name 
                                     font.pixelSize: 12
                                     text: (modelData.state == "online" || modelData.state == "ready") ? "\uf00c" : ""
-                                    color: "#ECEFF4"
+                                    color: "white"
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
                             }
                             Text {
                                 text: (modelData.name == "") ? "[Hidden Wifi]" : modelData.name
-                                color: "#ECEFF4"
+                                color: "white"
                                 elide: Text.ElideRight
                                 width: 230
                                 anchors.verticalCenter: parent.verticalCenter
@@ -823,6 +1013,7 @@ Item {
                                 else if (modelData.strength >= 50 ) { return "icons/network-wireless-signal-good-symbolic.svg" }
                                 else if (modelData.strength >= 45 ) { return "icons/network-wireless-signal-ok-symbolic.svg" }
                                 else if (modelData.strength >= 30 ) { return "icons/network-wireless-signal-weak-symbolic.svg" }
+                                else { return "icons/network-wireless-signal-none-symbolic.svg" }
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
@@ -841,7 +1032,7 @@ Item {
 
             Rectangle {
                 id: setting  
-                color: "#2E3440"
+                color: '#989897' //"#2E3440"
                 width: 360 + 20 
                 height: 65
                 anchors {
@@ -869,7 +1060,7 @@ Item {
                         anchors.topMargin: 5
                         anchors.rightMargin: (batteryCharging) ? -5 : -2 
                         anchors.top: parent.top 
-                        color: "#ECEFF4"
+                        color: 'white'
                     }
 
                     // battery 
@@ -886,7 +1077,7 @@ Item {
                     // audio
                     Image {
                         id: audio
-                        source: "icons/audio-volume-high-symbolic.svg"
+                        source: "icons/audio-volume-medium-symbolic.svg"
                         width: 34; height: width; sourceSize.width: width*2; sourceSize.height: height*2;
                     }
 
@@ -903,19 +1094,18 @@ Item {
                     }
 
                     Text {
+                        id: systemClock
                         font.pointSize: 11
                         text: Qt.formatDateTime(new Date(), formatDateTimeString)
-                        color: "#ECEFF4"
+                        color: 'white'
                         anchors.leftMargin: 5
                         Timer { 
+                            id: systemTime
                             repeat: true 
                             interval: 60000
                             running: true 
-                            onTriggered: { 
-                                parent.text = Qt.formatDateTime(new Date(), formatDateTimeString);
-                                lockscreenTime.text = Qt.formatDateTime(new Date(), "HH:mm");
-                                lockscreenDate.text = Qt.formatDateTime(new Date(), "dddd, MMMM d"); 
-                            }
+                            triggeredOnStart: true
+                            onTriggered: setSystemClock();
                         }
                     }
                 }
@@ -939,7 +1129,7 @@ Item {
                     running: false
                     repeat: false
                     onTriggered: {
-                        view.grabToImage(function(result) {
+                        root.grabToImage(function(result) {
                             var fileName = Qt.formatDateTime(new Date(), "yyyy-MM-dd-hh-mm-ss") + ".png";
                             result.saveToFile("/home/pi/Pictures/" + fileName);
                             console.log("Screenshot: " + fileName);
@@ -1011,11 +1201,11 @@ Item {
                     Row {
                         anchors {
                             left: parent.left
-                            bottom: parent.bottom
+                            bottom: parent.bottom; margins: 10
                         }
                         height: 60
                         width: parent.width
-                        spacing: 360
+                        spacing: 340
                         Rectangle {
                             height: 60
                             width: 120
@@ -1036,14 +1226,14 @@ Item {
                         }
                         Rectangle {
                             height: 60
-                            width: 120
-                            color: 'transparent'
+                            width: 120; radius: 10
+                            color: '#4875E2'
                             Text {
                                 text: 'Join' 
                                 font.pointSize: 10
                                 font.bold: true
                                 anchors.centerIn: parent
-                                color: '#5e81ac'
+                                color: 'white'
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -1064,15 +1254,20 @@ Item {
             InputPanel {
                 id: inputPanel
                 z: 89
-                y: parent.height
-                anchors.left: parent.left
-                anchors.right: parent.right
+                x: keyboardPosition[view.orientation].hidden_x
+                y: keyboardPosition[view.orientation].hidden_y
+                width: portraitMode ? 800 : 1280
+                rotation: orientation
+                visible: false
+                onActiveChanged: visible = true
+
                 states: State {
                     name: "visible"
-                    when: inputPanel.active && root.state != "locked"
+                    when: inputPanel.active && root.state != "locked" && root.state != "switchoff"
                     PropertyChanges {
                         target: inputPanel
-                        y: parent.height - inputPanel.height
+                        x: view.keyboardPosition[view.orientation].x
+                        y: view.keyboardPosition[view.orientation].y
                     }
                 }
                 transitions: Transition {
@@ -1082,6 +1277,11 @@ Item {
                     reversible: true
                     enabled: !VirtualKeyboardSettings.fullScreenMode
                     ParallelAnimation {
+                        NumberAnimation {
+                            properties: "x"
+                            duration: 250
+                            easing.type: Easing.InOutQuad
+                        }
                         NumberAnimation {
                             properties: "y"
                             duration: 250
@@ -1094,7 +1294,6 @@ Item {
                     property: "animating"
                     value: inputPanelTransition.running
                 }
-                AutoScroller {}
             }
 
             // lockscreen 
@@ -1108,24 +1307,40 @@ Item {
                 MouseArea {
                     id: lockscreenMosueArea
                     anchors.fill: parent 
+                    enabled: !screenLocked
+                    onEnabledChanged: {
+                        if (enabled && root.state == "locked" ) { idleTimer.start() }
+                    }
                     drag.target: lockscreen; drag.axis: Drag.YAxis; drag.maximumY: 0
                     onReleased: { 
-                        if (lockscreen.y > -480) { bounce.restart(); } else { root.state = "normal"; lockscreen.y = 0; } 
+                        if (lockscreen.y > -480) { bounce.restart(); } else { root.state = "normal"; lockscreen.y = 0; sensorEnabled = true; } 
+                        idleTimer.restart();
+                    } 
+                }
+                Timer {
+                    id: idleTimer
+                    running: false; interval: 8000;
+                    onTriggered: { 
+                        if (root.state == "locked") { // dim the screen after 8s idle 
+                            screenLocked = true; 
+                            turnScreenOff();
+                        }
                     } 
                 }
                 NumberAnimation { id: bounce; target: lockscreen; properties: "y"; to: 0; easing.type: Easing.InOutQuad; duration: 200 }
                 Text { 
                     id: lockscreenTime
-                    text: Qt.formatDateTime(new Date(), "HH:mm"); color: 'white'; font.pointSize: 26; 
+                    text: Qt.formatDateTime(new Date(), "HH:mm"); color: wallpaperFontColor; font.pointSize: 22; 
                     anchors { left: parent.left; bottom: lockscreenDate.top; leftMargin: 30; bottomMargin: 5 }
                 }
                 Text { 
                     id: lockscreenDate
-                    text: Qt.formatDateTime(new Date(), "dddd, MMMM d"); color: 'white'; font.pointSize: 16; 
+                    text: Qt.formatDateTime(new Date(), "dddd, MMMM d"); color: wallpaperFontColor; font.pointSize: 14; 
                     anchors { left: parent.left; bottom: parent.bottom; margins: 30 }
                 }
             }
 
+            PowerOffMenu { id: powerOffMenu }
         } // end of content  
 
         // notification
@@ -1133,9 +1348,9 @@ Item {
             id: notification
             width: notificationContainer.width + 55
             height: notificationContainer.height + 55
-            anchors.left: parent.left
-            anchors.leftMargin: 300
+            anchors.horizontalCenter: parent.horizontalCenter
             y: -160
+            visible: (showAnimation.running || hideAnimation.running || notificationTimer.running)
             Rectangle {
                 id: notificationContainer
                 width: 480
@@ -1156,7 +1371,7 @@ Item {
                 }
             }
 
-            NumberAnimation{
+            NumberAnimation {
                 id: showAnimation
                 target: notification
                 properties: "y"
@@ -1164,7 +1379,7 @@ Item {
                 duration: 500
             }
 
-            NumberAnimation{
+            NumberAnimation {
                 id: hideAnimation
                 target: notification
                 properties: "y"
@@ -1189,7 +1404,7 @@ Item {
         }
         DropShadow {
             z: 10
-            visible: true
+            visible: notification.visible
             anchors.fill: source
             cached: true;
             horizontalOffset: 3;
@@ -1201,34 +1416,34 @@ Item {
             source: notification;
         }
 
-    } // end of view 
+        state: "normal" 
 
-    state: "normal" 
+        states: [
+            State {
+                name: "setting"
+                PropertyChanges { target: settingSheet; y: 0 } 
+            },
+            State { name: "locked" }, 
+            State { name: "popup" }, 
+            State { name: "switchoff" }, 
+            State{
+                name: "drawer"
+                PropertyChanges { target: content; anchors.leftMargin: Tab.DrawerWidth }
+            },
+            State {
+                name: "normal"
+                PropertyChanges { target: content; anchors.leftMargin: 0 }
+                PropertyChanges { target: settingSheet; y: -settingSheet.height + 65 }
+            }
+        ]
 
-    states: [
-        State {
-            name: "setting"
-            PropertyChanges { target: settingSheet; y: 0 } 
-        },
-        State { name: "locked" }, 
-        State { name: "popup" }, 
-        State{
-            name: "drawer"
-            PropertyChanges { target: content; anchors.leftMargin: Tab.DrawerWidth }
-        },
-        State {
-            name: "normal"
-            PropertyChanges { target: content; anchors.leftMargin: 0 }
-            PropertyChanges { target: settingSheet; y: -600 + 65 }
-        }
-    ]
+        transitions: [
+            Transition {
+                to: "*"
+                NumberAnimation { target: settingSheet; properties: "y"; duration: 400; easing.type: Easing.InOutQuad; }
+                NumberAnimation { target: content; properties: "anchors.leftMargin"; duration: 300; easing.type: Easing.InOutQuad; }
+            }
+        ]
+    } // end of root 
 
-    transitions: [
-        Transition {
-            to: "*"
-            NumberAnimation { target: settingSheet; properties: "y"; duration: 400; easing.type: Easing.InOutQuad; }
-            NumberAnimation { target: content; properties: "anchors.leftMargin"; duration: 300; easing.type: Easing.InOutQuad; }
-        }
-    ]
-
-}
+} // end of view Window 

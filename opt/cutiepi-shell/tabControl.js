@@ -22,16 +22,32 @@ function openNewTab(pageid, url) {
     tabListView.currentIndex = 0 // move highlight to top  
 }
 
-function openNewTermTab(pageid) {
-    //console.log("openNewTab: "+ pageid + ', currentTab: ' + currentTab);
-    if (hasTabOpen) { 
-        tabModel.insert(0, { "title": "Terminal", "url": "term://", "pageid": pageid, "favicon": "icons/favicon.png" } );
+function openNewAppTab(pageid, app) {
+    var tabData, appView;
+
+    switch(app) {
+        case 'terminal': 
+            tabData = { "title": "Terminal", "url": "cutiepi://terminal", "pageid": pageid, "icon": "icons/favicon.png" };
+            appView = tabTermView.createObject(content, { id: pageid, objectName: pageid });
+            break;
+        case 'factorymode': 
+            tabData = { "title": "Factory Testing Mode", "url": "cutiepi://factorymode", "pageid": pageid, "icon": "icons/favicon.png" };
+            appView = tabFactoryModeView.createObject(content, { id: pageid, objectName: pageid });
+            break;
+        case 'setting':
+            tabData = { "title": "Settings", "url": "cutiepi://setting", "pageid": pageid, "icon": "icons/favicon.png" };
+            appView = tabSettingView.createObject(content, { id: pageid, objectName: pageid });
+            break;
+    }
+
+    if (hasTabOpen) {
+        tabModel.insert(0, tabData);
         itemMap[currentTab].visible = false;
     } else {
-        tabModel.set(0, { "title": "Terminal", "url": "term://", "pageid": pageid, "favicon": "icons/favicon.png" } );
+        tabModel.set(0, tabData);
     }
-    var termView = tabTermView.createObject(content, { id: pageid, objectName: pageid } );
-    itemMap[pageid] = termView;
+
+    itemMap[pageid] = appView;
 
     if (currentTab !== pageid && currentTab !== "") { 
         itemMap[currentTab].visible = false;   
@@ -54,6 +70,26 @@ function switchToTab(pageid) {
     urlText.text = itemMap[currentTab].url;
 }
 
+function goToSetting() {
+    var targetPageid = "";
+    for (const pageid in itemMap) {
+        if (itemMap[pageid].url === "cutiepi://setting")
+            targetPageid = pageid;
+    }
+
+    if (targetPageid !== "") {
+        var targetIndex = -1;
+        for (var i = 0; i < tabListView.model.count; i++) {
+            if (tabListView.model.get(i).pageid == targetPageid)
+                targetIndex = i
+        }
+        tabListView.currentIndex = targetIndex;
+        switchToTab(targetPageid);
+    } else {
+        openNewAppTab("page-" + Tab.salt(), 'setting');
+    }
+}
+
 function closeTab(deleteIndex, pageid) { 
     //console.log('closeTab: ' + pageid + ' at ' + deleteIndex + ': ' + tabModel.get(deleteIndex))
     //console.log('\ttabListView.model.get(deleteIndex): ' + tabListView.model.get(deleteIndex).pageid)
@@ -74,10 +110,10 @@ function closeTab(deleteIndex, pageid) {
 } 
 
 function loadUrl(url) {
-    if (url == "term://") {
+    if (url === "cutiepi://terminal") {
         tabBounce.start(); // visual cue that we opened a new tab
-        openNewTermTab("page"+salt());
-    } else if (hasTabOpen) { 
+        openNewAppTab("page" + salt(), 'terminal');
+    } else if (hasTabOpen) {
         itemMap[currentTab].url = fixUrl(url)
     } else { 
         openNewTab("page"+salt(), fixUrl(url));
@@ -154,7 +190,7 @@ function queryHistory(str) {
     var result; 
     db.transaction(
         function(tx) {
-            result = tx.executeSql("select * from history where url like ?", ['%'+str+'%']) 
+            result = tx.executeSql("select * from history where url like ? and url not like 'cutiepi://'", ['%'+str+'%']) 
         }
     );
     historyModel.clear();

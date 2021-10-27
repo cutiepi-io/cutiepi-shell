@@ -5,7 +5,7 @@ After=systemd-user-sessions.service
 [Service]
 User=pi
 WorkingDirectory=/home/pi
-ExecStart=/opt/cutiepi-shell/start.sh
+ExecStart=/opt/cutiepi-shell/cutiepi-shell
 Restart=always
 
 [Install]

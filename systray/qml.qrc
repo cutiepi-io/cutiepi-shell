@@ -1,0 +1,11 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/"> 
+    <file>main.qml</file>
+    <file>images/battery-caution-symbolic.svg</file>
+    <file>images/battery-low-symbolic.svg</file>
+    <file>images/battery-full-symbolic.svg</file>
+    <file>images/battery-full-charged-symbolic.svg</file>
+    <file>images/battery-empty-symbolic.svg</file>
+    <file>images/battery-good-symbolic.svg</file>
+</qresource>
+</RCC>
