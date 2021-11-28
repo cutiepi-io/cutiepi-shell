@@ -65,7 +65,7 @@ Item {
                     if(switchoffThumb.x >= (switchoffSlider.width - switchoffThumb.width - 10)){
                         switchoffThumb.x = 5;
                         switchoffScreen = false;
-                        mcuInfo.confirmShutdown();
+                        pprocess.start("sudo", ["poweroff"]);
                     }
                 }
             }
@@ -92,7 +92,6 @@ Item {
                 anchors.fill: parent
                 onClicked: {
                     switchoffScreen = false
-                    mcuInfo.cancelShutdown();
                 }
             }
         }
