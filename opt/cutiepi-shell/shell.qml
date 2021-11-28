@@ -81,17 +81,16 @@ ApplicationWindow {
     Component.onCompleted: {
         //Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
         process.start("rfkill", ["unblock", "all"]);
-
-        setScreenBrightness(100);
         setAudioVolume(80);
+        brightnessSlider.value = 15
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
 
-    function turnScreenOn() { setScreenBrightness(50 + brightnessSlider.value) }
-    function turnScreenOff() { setScreenBrightness(0) }
+    function turnScreenOn() { brightnessSlider.value = 15 }
+    function turnScreenOff() { brightnessSlider.value = 0; backlight.brightness = 0; }
     function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
-    function setScreenBrightness(val) {} // process.start("/opt/cutiepi-shell/assets/setBrightness", [val]); }
+    function setScreenBrightness(val) { backlight.brightness = val }
 
     function setSystemClock() {
         systemClock.text = Qt.formatDateTime(new Date(), formatDateTimeString);
@@ -188,22 +187,22 @@ ApplicationWindow {
               '3.75': 65, '3.73': 60, '3.70': 55, '3.68': 50, '3.66': 45, '3.65': 40, '3.63': 35, 
               '3.62': 30, '3.60': 25, '3.58': 20, '3.545': 15, '3.51': 10, '3.42': 5, '3.00': 0 }
 
-        property variant button
         property variant battery
-        property variant charge
 
         function updateEvent(eventType, value) {
             switch(eventType) {
-                case 'battery': battery = value; break;
-                case 'charge': charge= value; break;
-                case 'button': button = value; break;
+                case 'battery':
+                    battery = value;
+                    break;
+                case 'charge':
+                    if (value == 4) batteryCharging = true;
+                    if (value == 5) batteryCharging = false;
+                    break;
+                case 'button':
+                    if (value == 1) screenLocked = !screenLocked;
+                    if (value == 3) switchoffScreen = true;
+                    break;
             }
-        }
-        onButtonChanged: {
-            if (button == 1)
-                screenLocked = !screenLocked;
-            if (button == 3)
-                switchoffScreen = true;
         }
         onBatteryChanged: {
             var currentVol = (battery/1000).toFixed(2); 
@@ -223,10 +222,6 @@ ApplicationWindow {
                 }
             }
         }
-        onChargeChanged: {
-            if (charge == 4) batteryCharging = true 
-            if (charge == 5) batteryCharging = false 
-        }
     }
 
     SoundEffect {
@@ -245,8 +240,8 @@ ApplicationWindow {
 
     DBusInterface {
         id: iioSensorProxy
-        signalsEnabled: true
 
+        signalsEnabled: true
         bus: DBus.SystemBus
         service: 'net.hadess.SensorProxy'
         iface: 'net.hadess.SensorProxy'
@@ -879,7 +874,7 @@ ApplicationWindow {
                         }
                         Slider { 
                             id: brightnessSlider
-                            from: 0; to: 50; stepSize: 10; value: 50; 
+                            from: 1; to: 15; stepSize: 1; value: 15
                             anchors {
                                 left: brightnessIcon.right
                                 leftMargin: 15
@@ -906,7 +901,7 @@ ApplicationWindow {
                                 }
                             }
                             onValueChanged: {
-                                setScreenBrightness(50+value)
+                                setScreenBrightness(value)
                             }
 		                }
                 }

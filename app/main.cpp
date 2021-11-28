@@ -26,6 +26,8 @@
 #include <QDebug>
 #include <QThread>
 #include <QFile>
+#include <QCursor>
+#include "backlight.h"
 
 #ifdef USE_ADBLOCK
 #include "third_party/ad-block/ad_block_client.h"
@@ -69,21 +71,26 @@ private:
 
 int main(int argc, char *argv[])
 {
+    qputenv("QT_QPA_PLATFORM", "xcb");
+    qputenv("DISPLAY", ":0.0");
     qputenv("QT_IM_MODULE", "qtvirtualkeyboard");
-    qputenv("QT_QPA_PLATFORM", "eglfs");
-    qputenv("QT_QPA_EGLFS_INTEGRATION", "eglfs_kms");
+    qputenv("QT_XCB_GL_INTEGRATION", "xcb_egl");
+    qputenv("QT_IM_MODULE", "qtvirtualkeyboard");
 
     qputenv("XDG_RUNTIME_DIR", "/run/user/1000");
     qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
 
     QtWebEngine::initialize();
     QGuiApplication app(argc, argv);
-
+    QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
     app.setOrganizationName("CutiePi");
     app.setOrganizationDomain("cutiepi.io");
     app.setApplicationName("Shell");
 
     QQmlApplicationEngine engine;
+
+    Backlight backlight;
+    engine.rootContext()->setContextProperty("backlight", &backlight); 
 
 #ifdef USE_ADBLOCK
     RequestInterceptor interceptor;

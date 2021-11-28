@@ -1,9 +1,11 @@
 TARGET = shell
 TEMPLATE = app
-CONFIG -= app_bundle
 QT += qml quick webengine
 
-SOURCES = main.cpp 
+SOURCES += main.cpp \
+        backlight.cpp
+
+HEADERS += backlight.h
 
 contains(DEFINES, USE_ADBLOCK) {
 	SOURCES += third_party/ad-block/ad_block_client.cc \
