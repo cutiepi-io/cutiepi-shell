@@ -23,7 +23,7 @@
 
 import QtQuick 2.15
 import QtQuick.Window 2.15
-import QtQuick.Controls 2.1
+import QtQuick.Controls 2.15
 import QtMultimedia 5.15 
 
 import QtWebEngine 1.7
@@ -33,21 +33,19 @@ import QtQuick.LocalStorage 2.0
 import QtGraphicalEffects 1.0
 
 import Qt.labs.settings 1.0
-
-import QtSensors 5.11
-
+import Nemo.DBus 2.0
 import MeeGo.Connman 0.2 
 import Yat 1.0 as Yat
 
-import McuInfo 1.0
 import Process 1.0
 import "tabControl.js" as Tab 
 
-Window {  
+ApplicationWindow {
     id: view
     width: 800
     height: 1280
     visible: true
+    visibility: "FullScreen"
 
     Rectangle { anchors.fill: parent; color: '#ececec' }
 
@@ -60,10 +58,6 @@ Window {
     property bool batteryCharging: false
     property variant wallpaperUrl: settings.value("wallpaperUrl", "file:///usr/share/rpd-wallpaper/boombox.png");
     property variant wallpaperFontColor: 'white' // '#525353'
-
-    property real pitch: 0.0
-    property real roll: 0.0
-    readonly property double radians_to_degrees: 180 / Math.PI
 
     property variant orientation: 270
     property variant portraitMode: (orientation === 180 || orientation === 0)
@@ -85,8 +79,7 @@ Window {
     }
 
     Component.onCompleted: {
-        mcuInfo.start();
-        Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
+        //Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
         process.start("rfkill", ["unblock", "all"]);
 
         setScreenBrightness(100);
@@ -98,7 +91,7 @@ Window {
     function turnScreenOn() { setScreenBrightness(50 + brightnessSlider.value) }
     function turnScreenOff() { setScreenBrightness(0) }
     function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
-    function setScreenBrightness(val) { process.start("/opt/cutiepi-shell/assets/setBrightness", [val]); }
+    function setScreenBrightness(val) {} // process.start("/opt/cutiepi-shell/assets/setBrightness", [val]); }
 
     function setSystemClock() {
         systemClock.text = Qt.formatDateTime(new Date(), formatDateTimeString);
@@ -182,16 +175,30 @@ Window {
 
     Process { id: process }
 
-    McuInfo {
+    DBusInterface {
         id: mcuInfo
-        portName: "/dev/ttyS0"
-        portBaudRate: 115200
 
+        service: 'io.cutiepi.service'
+        iface: 'io.cutiepi.interface'
+        path: '/mcu'
+
+        signalsEnabled: true
         property variant batteryAttributes: 
             { '4.20': 100, '3.99': 95, '3.97': 90, '3.92': 85, '3.87': 80, '3.83': 75, '3.79': 70, 
               '3.75': 65, '3.73': 60, '3.70': 55, '3.68': 50, '3.66': 45, '3.65': 40, '3.63': 35, 
               '3.62': 30, '3.60': 25, '3.58': 20, '3.545': 15, '3.51': 10, '3.42': 5, '3.00': 0 }
 
+        property variant button
+        property variant battery
+        property variant charge
+
+        function updateEvent(eventType, value) {
+            switch(eventType) {
+                case 'battery': battery = value; break;
+                case 'charge': charge= value; break;
+                case 'button': button = value; break;
+            }
+        }
         onButtonChanged: {
             if (button == 1)
                 screenLocked = !screenLocked;
@@ -220,13 +227,6 @@ Window {
             if (charge == 4) batteryCharging = true 
             if (charge == 5) batteryCharging = false 
         }
-        onVersionChanged: {
-            console.log("MCU version: " + version)
-            mcuVersion = version;
-        }
-        Timer { 
-            interval: 1000; repeat: true; running: (mcuVersion === ""); onTriggered: mcuInfo.getVersion();
-        }
     }
 
     SoundEffect {
@@ -243,46 +243,29 @@ Window {
         }
     }
 
-    Accelerometer {
-        id: accel
-        active: sensorEnabled
-        dataRate: 30
-        onReadingChanged: {
-            var accX = accel.reading.x
-            var accY = accel.reading.y
-            var accZ = -accel.reading.z
+    DBusInterface {
+        id: iioSensorProxy
+        signalsEnabled: true
 
-            var pitchAcc = Math.atan2(accY, accZ)*radians_to_degrees;
-            var rollAcc = Math.atan2(accX, accZ)*radians_to_degrees;
+        bus: DBus.SystemBus
+        service: 'net.hadess.SensorProxy'
+        iface: 'net.hadess.SensorProxy'
+        path: '/net/hadess/SensorProxy'
 
-            pitch = pitch * 0.98 + pitchAcc * 0.02;
-            roll = roll * 0.98 + rollAcc * 0.02;
-            
-            var tmp = orientation;
-
-            //update orientation
-            if(pitch >= 30.0)
-                tmp = 0
-            else if(pitch <= -30.0)
-                tmp = 180
-            if(roll >= 30.0)
-                tmp = 270
-            else if(roll <= -30.0)
-                tmp = 90 
-
-            orientation = tmp;
-        }
-    }
-
-    Gyroscope {
-        id: gyro
-        active: sensorEnabled
-        dataRate: 30
-        onReadingChanged: {
-            //integrate gyro rates to update angles (pitch and roll)
-            var dt=0.01 //10ms
-            pitch += gyro.reading.x*dt;
-            roll -= gyro.reading.y*dt;
+        onPropertiesChanged: {
+            var accel = iioSensorProxy.getProperty("AccelerometerOrientation");
+            if (sensorEnabled) {
+                switch(accel) {
+                    case 'normal':
+                        view.orientation = 0; break;
+                    case 'left-up':
+                        view.orientation = 270; break;
+                    case 'bottom-up':
+                        view.orientation = 180; break;
+                    case 'right-up':
+                        view.orientation = 90; break;
+                }
+            }
         }
     }
 
@@ -591,7 +574,7 @@ Window {
                     font.pointSize: 9; color: "#2E3440"; selectionColor: "#4875E2"
                     anchors { left: parent.left; top: parent.top; right: stopButton.left; margins: 11; }
                     height: parent.height
-                    inputMethodHints: Qt.ImhNoAutoUppercase // url hint 
+                    inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText // url hint
                     clip: true
                     
                     onAccepted: { 
