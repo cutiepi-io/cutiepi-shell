@@ -23,7 +23,7 @@ Item {
 
         Text { // caret-up 
             anchors.top: parent.top
-            anchors.topMargin: -32
+            anchors.topMargin: xcbFontSizeAdjustment + -32
             anchors.left: parent.horizontalCenter
             anchors.leftMargin: root.portraitMode ? - (urlBar.width/2) : -20
             font { family: fontAwesome.name; pointSize: xcbFontSizeAdjustment + 25 }
