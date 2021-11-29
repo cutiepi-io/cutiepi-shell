@@ -21,7 +21,7 @@ Dialog {
                 width: 360 
                 height: 30
                 clip: true
-                Text { text: model.name; font.pointSize: 8 }
+                Text { text: model.name; font.pointSize: xcbFontSizeAdjustment + 8 }
                 MouseArea {
                     anchors.fill: parent
                     onClicked: timeZoneSelected(model.name)

@@ -32,6 +32,7 @@ import QtQuick.VirtualKeyboard.Settings 2.2
 import QtQuick.LocalStorage 2.0
 import QtGraphicalEffects 1.0
 
+import Qt.labs.platform 1.1
 import Qt.labs.settings 1.0
 import Nemo.DBus 2.0
 import MeeGo.Connman 0.2 
@@ -69,6 +70,8 @@ ApplicationWindow {
         '0': { x: 0, y: 1030, hidden_x: 0, hidden_y: 1280 } 
     } 
 
+    property variant xcbFontSizeAdjustment: 5
+
     property string mcuVersion: ""
     property string currentTab: ""
     property bool hasTabOpen: (tabModel.count !== 0) && (typeof(Tab.itemMap[currentTab]) !== "undefined")
@@ -80,15 +83,17 @@ ApplicationWindow {
 
     Component.onCompleted: {
         //Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
+        view.visibility = settings.value("defaultVisibility", "FullScreen");
         process.start("rfkill", ["unblock", "all"]);
         setAudioVolume(80);
-        brightnessSlider.value = 15
+        brightnessSlider.value = 15; backlight.brightness = 15;
+        setOrientation(iioSensorProxy.getProperty("AccelerometerOrientation"));
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
 
-    function turnScreenOn() { brightnessSlider.value = 15 }
-    function turnScreenOff() { brightnessSlider.value = 0; backlight.brightness = 0; }
+    function turnScreenOn() { brightnessSlider.value = 15; view.visibility = "FullScreen"; }
+    function turnScreenOff() { brightnessSlider.value = 0; backlight.brightness = 0; view.visibility = "FullScreen"; }
     function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
     function setScreenBrightness(val) { backlight.brightness = val }
 
@@ -98,13 +103,24 @@ ApplicationWindow {
         lockscreenDate.text = Qt.formatDateTime(new Date(), "dddd, MMMM d"); 
     }
 
+    function setOrientation(val) {
+        switch(val) {
+            case 'normal':
+                view.orientation = 0; break;
+            case 'left-up':
+                view.orientation = 270; break;
+            case 'bottom-up':
+                view.orientation = 180; break;
+            case 'right-up':
+                view.orientation = 90; break;
+        }
+    }
+
     onScreenLockedChanged: {
         if (screenLocked) {
             turnScreenOff();
             root.state = "locked";
             process.start("sudo", ["cpufreq-set", "-g", "powersave"]);
-            orientation = 270; 
-            sensorEnabled = false;
         } else {
             turnScreenOn();
             process.start("sudo", ["cpufreq-set", "-g", "conservative"]);
@@ -115,9 +131,16 @@ ApplicationWindow {
         turnScreenOn();
         if (switchoffScreen) {
             root.state = "switchoff";
+            view.visibility = "FullScreen";
         } else {
             root.state = "normal"
         }
+    }
+
+    SystemTrayIcon {
+        visible: true
+        icon.source: "file:///opt/cutiepi-shell/icons/logo.png"
+        onActivated: view.visibility = "FullScreen"
     }
 
     Timer {
@@ -250,16 +273,7 @@ ApplicationWindow {
         onPropertiesChanged: {
             var accel = iioSensorProxy.getProperty("AccelerometerOrientation");
             if (sensorEnabled) {
-                switch(accel) {
-                    case 'normal':
-                        view.orientation = 0; break;
-                    case 'left-up':
-                        view.orientation = 270; break;
-                    case 'bottom-up':
-                        view.orientation = 180; break;
-                    case 'right-up':
-                        view.orientation = 90; break;
-                }
+                setOrientation(accel);
             }
         }
     }
@@ -310,7 +324,7 @@ ApplicationWindow {
                             text: (typeof(Tab.itemMap[model.pageid]) !== "undefined" && Tab.itemMap[model.pageid].title !== "") ? 
                             Tab.itemMap[model.pageid].title : "Loading..";
                             color: "#3e3e3e" 
-                            font.pointSize: 7
+                            font.pointSize: xcbFontSizeAdjustment + 7
                             anchors { left: parent.left; margins: Tab.DrawerMargin; verticalCenter: parent.verticalCenter
                                 leftMargin: Tab.DrawerMargin+30; right: parent.right; rightMargin: 38 } 
                             elide: Text.ElideRight 
@@ -330,10 +344,10 @@ ApplicationWindow {
                             anchors { right: parent.right; top: parent.top}
                             Text {  // closeTab button
                                 visible: tabListView.currentIndex === index
-                                anchors { top: parent.top; right: parent.right; margins: Tab.DrawerMargin; topMargin: Tab.DrawerMargin - 2 }
+                                anchors { top: parent.top; right: parent.right; margins: Tab.DrawerMargin }
                                 text: "\uF057"
                                 font.family: fontAwesome.name
-                                font.pointSize: 10
+                                font.pointSize: xcbFontSizeAdjustment + 13
                                 color: "gray"
 
                                 MouseArea { 
@@ -355,13 +369,13 @@ ApplicationWindow {
                     height: 80
                     color: "transparent"
                     Text { 
-                        text: "\uF067"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: 10
+                        text: "\uF067"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: xcbFontSizeAdjustment + 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
                     }
                     Text { 
                         text: "<b>New Tab</b>"
                         color: "#3e3e3e"
-                        font.pointSize: 10
+                        font.pointSize: xcbFontSizeAdjustment + 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 70; }
                     }
                     MouseArea { 
@@ -395,13 +409,13 @@ ApplicationWindow {
                     height: 80
                     color: "transparent"
                     Text { 
-                        text: "\uF013"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: 10
+                        text: "\uF013"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: xcbFontSizeAdjustment + 10
                         anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
                     }
                     Text { 
                         text: "<b>Settings</b>"
                         color: '#3e3e3e'
-                        font.pointSize: 10
+                        font.pointSize: xcbFontSizeAdjustment + 10
                         anchors { top: parent.top; left: parent.left; margins: 18; leftMargin: 70; }
                     }
                     MouseArea { 
@@ -456,7 +470,7 @@ ApplicationWindow {
                     property variant icon: "icons/terminal-512.png"
                     anchors.fill: parent 
                     anchors.topMargin: 85
-                    font.pointSize: 8 
+                    font.pointSize: xcbFontSizeAdjustment + 8 
                     z: 0
                 }
             } 
@@ -502,7 +516,7 @@ ApplicationWindow {
                 // hamburger button 
                 Text {
                     id: hamburgerButton
-                    font.pointSize: 14
+                    font.pointSize: xcbFontSizeAdjustment + 15
                     font.family: fontAwesome.name 
                     text: "\uf0c9"
                     color: '#3e3e3e'
@@ -524,17 +538,19 @@ ApplicationWindow {
                 Text { 
                     visible: hasTabOpen && (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                     anchors {  left: hamburgerButton.right; leftMargin: 30; verticalCenter: parent.verticalCenter } 
-                    text: Tab.itemMap[currentTab].title; color: "#3e3e3e"; font.pointSize: 12
+                    text: Tab.itemMap[currentTab].title; color: "#3e3e3e"; font.pointSize: xcbFontSizeAdjustment + 12
                 }
 
                 Item {
                     id: backButton
-                    width: 30; height: 30; anchors { left: hamburgerButton.right; margins: 20; top: parent.top; topMargin: 22 }
+                    width: 30; height: 35; anchors { left: hamburgerButton.right; margins: 20; top: parent.top; topMargin: xcbFontSizeAdjustment + 22 }
                     visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
                     Text { 
                         id: backButtonIcon
                         text: "\uF053" 
-                        font { family: fontAwesome.name; pointSize: 15 }
+                        anchors.fill: parent
+                        verticalAlignment: Text.AlignVCenter
+                        font { family: fontAwesome.name; pointSize: xcbFontSizeAdjustment + 15 }
                         color: hasTabOpen ? (Tab.itemMap[currentTab].canGoBack ? "#434C5E" : "lightgray") : "lightgray"
                     }
 
@@ -566,8 +582,8 @@ ApplicationWindow {
                 TextInput { 
                     id: urlText
                     text: hasTabOpen ? Tab.itemMap[currentTab].url : ""
-                    font.pointSize: 9; color: "#2E3440"; selectionColor: "#4875E2"
-                    anchors { left: parent.left; top: parent.top; right: stopButton.left; margins: 11; }
+                    font.pointSize: xcbFontSizeAdjustment + 9; color: "#2E3440"; selectionColor: "#4875E2"
+                    anchors { left: parent.left; top: parent.top; right: stopButton.left; margins: xcbFontSizeAdjustment + 11; }
                     height: parent.height
                     inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText // url hint
                     clip: true
@@ -594,7 +610,7 @@ ApplicationWindow {
                     id: stopButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF00D"
-                    font { family: fontAwesome.name; pointSize: 12 }
+                    font { family: fontAwesome.name; pointSize: xcbFontSizeAdjustment + 12 }
                     color: "gray"
                     visible: ( hasTabOpen && Tab.itemMap[currentTab].loadProgress < 100 && !urlText.focus) ? true : false
                     MouseArea {
@@ -606,7 +622,7 @@ ApplicationWindow {
                     id: reloadButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF01E"
-                    font { family: fontAwesome.name; pointSize: 8 }
+                    font { family: fontAwesome.name; pointSize: xcbFontSizeAdjustment + 8 }
                     color: "gray"
                     visible: ( hasTabOpen && Tab.itemMap[currentTab].loadProgress == 100 && !urlText.focus ) ? true : false 
                     MouseArea {
@@ -621,7 +637,7 @@ ApplicationWindow {
                     id: clearButton
                     anchors { right: urlBar.right; rightMargin: 8; verticalCenter: parent.verticalCenter}
                     text: "\uF057"
-                    font { family: fontAwesome.name; pointSize: 12 }
+                    font { family: fontAwesome.name; pointSize: xcbFontSizeAdjustment + 12 }
                     color: "gray"
                     visible: urlText.focus
                     MouseArea {
@@ -795,7 +811,7 @@ ApplicationWindow {
                             left: parent.left
                             leftMargin: 15
                         }
-                        font.pointSize: 9
+                        font.pointSize: xcbFontSizeAdjustment + 10
                     }
 
                     Rectangle{
@@ -815,7 +831,7 @@ ApplicationWindow {
                             anchors{
                                 top: parent.top
                                 bottom: parent.bottom
-                                right: parent.right
+                                left: parent.left
                             }
                             width: 30
                             height: 30
@@ -825,11 +841,11 @@ ApplicationWindow {
                             states: [
                                 State {
                                     name: "enabled"
-                                    AnchorChanges { target: toggleThumb; anchors.left: undefined; anchors.right: parent.right }
+                                    AnchorChanges { target: toggleThumb; anchors.left: parent.left; anchors.right: undefined }
                                 },
                                 State {
                                     name: "disabled"
-                                    AnchorChanges { target: toggleThumb; anchors.left: parent.left; anchors.right: undefined }
+                                    AnchorChanges { target: toggleThumb; anchors.left: undefined; anchors.right: parent.right }
                                 }
                             ]
                         }
@@ -870,7 +886,7 @@ ApplicationWindow {
                                 left: parent.left
                                 leftMargin: 20
                             }
-                            font.pointSize: 10
+                            font.pointSize: xcbFontSizeAdjustment + 10
                         }
                         Slider { 
                             id: brightnessSlider
@@ -963,7 +979,7 @@ ApplicationWindow {
                                 elide: Text.ElideRight
                                 width: 230
                                 anchors.verticalCenter: parent.verticalCenter
-                                font.pointSize: 9
+                                font.pointSize: xcbFontSizeAdjustment + 9
                             }
                         }
                         Row {
@@ -1033,7 +1049,7 @@ ApplicationWindow {
                     spacing: 10
 
                     Text { 
-                        font.pointSize: 8
+                        font.pointSize: xcbFontSizeAdjustment + 10
                         text: (batteryCharging) ? "charging" : batteryPercentage + "%"
                         anchors.topMargin: 5
                         anchors.rightMargin: (batteryCharging) ? -5 : -2 
@@ -1043,6 +1059,7 @@ ApplicationWindow {
 
                     // battery 
                     Image {
+                        id: batteryIndicatorImage
                         source: if (batteryCharging) { "icons/battery-full-charged-symbolic.svg" } 
                             else if (batteryPercentage >= 80) { "icons/battery-full-symbolic.svg" } 
                             else if (batteryPercentage >= 50) { "icons/battery-good-symbolic.svg" } 
@@ -1073,10 +1090,12 @@ ApplicationWindow {
 
                     Text {
                         id: systemClock
-                        font.pointSize: 11
+                        font.pointSize: xcbFontSizeAdjustment + 12
                         text: Qt.formatDateTime(new Date(), formatDateTimeString)
                         color: 'white'
                         anchors.leftMargin: 5
+                        height: parent.height - 10
+                        verticalAlignment: Text.AlignVCenter
                         Timer { 
                             id: systemTime
                             repeat: true 
@@ -1149,7 +1168,7 @@ ApplicationWindow {
                         }
                         text: 'Enter the password for "' + networkingModel.networkName + '"'
                         wrapMode: Text.Wrap
-                        font.pointSize: 9
+                        font.pointSize: xcbFontSizeAdjustment + 9
                     }
                     TextField {
                         id: passwordInput
@@ -1161,13 +1180,13 @@ ApplicationWindow {
                         }
                         width: parent.width - 50
                         height: 40
-                        font.pointSize: 9
+                        font.pointSize: xcbFontSizeAdjustment + 9
                         echoMode: showPassword.checked ? TextInput.Normal : TextInput.Password
                     }
                     CheckBox { 
                         id: showPassword
                         text: qsTr("Show password") 
-                        font.pointSize: 10
+                        font.pointSize: xcbFontSizeAdjustment + 10
                         checked: false
                         anchors {
                             top: passwordInput.bottom
@@ -1190,7 +1209,7 @@ ApplicationWindow {
                             color: 'transparent'
                             Text {
                                 text: 'Cancel' 
-                                font.pointSize: 10
+                                font.pointSize: xcbFontSizeAdjustment + 10
                                 anchors.centerIn: parent
                             }
                             MouseArea {
@@ -1208,7 +1227,7 @@ ApplicationWindow {
                             color: '#4875E2'
                             Text {
                                 text: 'Join' 
-                                font.pointSize: 10
+                                font.pointSize: xcbFontSizeAdjustment + 10
                                 font.bold: true
                                 anchors.centerIn: parent
                                 color: 'white'
@@ -1291,7 +1310,7 @@ ApplicationWindow {
                     }
                     drag.target: lockscreen; drag.axis: Drag.YAxis; drag.maximumY: 0
                     onReleased: { 
-                        if (lockscreen.y > -480) { bounce.restart(); } else { root.state = "normal"; lockscreen.y = 0; sensorEnabled = true; } 
+                        if (lockscreen.y > -480) { bounce.restart(); } else { root.state = "normal"; lockscreen.y = 0; } 
                         idleTimer.restart();
                     } 
                 }
@@ -1308,12 +1327,12 @@ ApplicationWindow {
                 NumberAnimation { id: bounce; target: lockscreen; properties: "y"; to: 0; easing.type: Easing.InOutQuad; duration: 200 }
                 Text { 
                     id: lockscreenTime
-                    text: Qt.formatDateTime(new Date(), "HH:mm"); color: wallpaperFontColor; font.pointSize: 22; 
+                    text: Qt.formatDateTime(new Date(), "HH:mm"); color: wallpaperFontColor; font.pointSize: xcbFontSizeAdjustment + 26; 
                     anchors { left: parent.left; bottom: lockscreenDate.top; leftMargin: 30; bottomMargin: 5 }
                 }
                 Text { 
                     id: lockscreenDate
-                    text: Qt.formatDateTime(new Date(), "dddd, MMMM d"); color: wallpaperFontColor; font.pointSize: 14; 
+                    text: Qt.formatDateTime(new Date(), "dddd, MMMM d"); color: wallpaperFontColor; font.pointSize: xcbFontSizeAdjustment + 16; 
                     anchors { left: parent.left; bottom: parent.bottom; margins: 30 }
                 }
             }
@@ -1345,7 +1364,7 @@ ApplicationWindow {
                     anchors{
                         centerIn: parent
                     }
-                    font.pointSize: 9
+                    font.pointSize: xcbFontSizeAdjustment + 9
                 }
             }
 

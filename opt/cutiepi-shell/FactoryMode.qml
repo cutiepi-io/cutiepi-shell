@@ -10,15 +10,12 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 100
         spacing: 50 
-        Component.onCompleted: mcuInfo.getVersion();
 
         Column {
             width: parent.width/2
             spacing: 10
-            Text { text: "Firmware version: " + mcuInfo.version }
-            Text { text: "Charging status: " + ( (mcuInfo.charge == 4) ? "true" : "false" ) }
-            Text { text: "Measured voltage: " + (mcuInfo.battery/1000).toFixed(3);  }
-            Text { text: "Accelerometer: " + accel.reading.x.toFixed(3) + ", " + accel.reading.y.toFixed(3) + ", " + accel.reading.z.toFixed(3) }
+            Text { text: "Charging status: " + ( view.batteryCharging ? "true" : "false" ); font.pointSize: 14 }
+            Text { text: "Measured voltage: " + (mcuInfo.battery/1000).toFixed(3); font.pointSize: 14 }
 
             MediaPlayer {
                 id: mediaplayer
@@ -33,7 +30,7 @@ Rectangle {
 
             Row { 
                 spacing: 20; 
-                Text { text: "Microphone/Speaker: " } 
+                Text { text: "Microphone/Speaker: "; font.pointSize: 14 } 
                 Button { 
                     text: "Record"; onClicked: process.start("arecord", ["-f", 'S16_LE', "-D", "hw:2,0", "-d", "5", "/tmp/record.wav"] )
                 } 

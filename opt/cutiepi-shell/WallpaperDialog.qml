@@ -21,7 +21,7 @@ Dialog {
                 width: 360 
                 height: 30
                 clip: true
-                Text { text: fileName; font.pointSize: 8 }
+                Text { text: fileName; font.pointSize: xcbFontSizeAdjustment + 8 }
                 MouseArea {
                     anchors.fill: parent
                     onClicked: { wallpaperSelected(folderModel.folder + fileName) }

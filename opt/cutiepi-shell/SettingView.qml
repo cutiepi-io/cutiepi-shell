@@ -8,7 +8,6 @@ Rectangle {
     anchors.fill: parent
     color: '#F7F6F4'
 
-    Component.onCompleted: mcuInfo.getVersion();
     Process { id: command }
 
     Flickable {
@@ -41,7 +40,7 @@ Rectangle {
                         }
                         text: "System" 
                         color: '#5C5C5C'
-                        font.pointSize: 10
+                        font.pointSize: xcbFontSizeAdjustment + 10
                     }
 
                     Rectangle {
@@ -69,7 +68,7 @@ Rectangle {
                             Rectangle {
                                 width: parent.width - 50; height: 50 
                                 Text { 
-                                    text: "Airplane Mode"; font.pointSize: 9; 
+                                    text: "Airplane Mode"; font.pointSize: xcbFontSizeAdjustment + 9; 
                                     anchors {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
@@ -92,7 +91,7 @@ Rectangle {
                             Rectangle {
                                 width: parent.width - 50; height: 50 
                                 Text { 
-                                    text: "Timezone"; font.pointSize: 9; 
+                                    text: "Timezone"; font.pointSize: xcbFontSizeAdjustment + 9; 
                                     anchors {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
@@ -108,7 +107,7 @@ Rectangle {
                                     }
                                     horizontalAlignment: Text.AlignRight
                                     text: settings.value("timezone", "UTC");
-                                    font.pointSize: 8
+                                    font.pointSize: xcbFontSizeAdjustment + 8
                                     rightPadding: 20 
                                     MouseArea {
                                         anchors.fill: parent
@@ -133,13 +132,13 @@ Rectangle {
                                 width: parent.width - 50; height: 50 
                                 Text {
                                     id: powerModeTitle
-                                    text: "Power Mode"; font.pointSize: 9; 
+                                    text: "Power Mode"; font.pointSize: xcbFontSizeAdjustment + 9; 
                                     anchors {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
                                     }
                                     Text { 
-                                        font.pointSize: 7; 
+                                        font.pointSize: xcbFontSizeAdjustment + 7; 
                                         color: '#5C5C5C'
                                         text: switch(powerModeSlider.value) {
                                             case 0: "Power Saving"; break;
@@ -195,7 +194,7 @@ Rectangle {
                         }
                         text: "Appearance" 
                         color: '#5C5C5C'
-                        font.pointSize: 10
+                        font.pointSize: xcbFontSizeAdjustment + 10
                     }
 
                     Rectangle {
@@ -222,7 +221,7 @@ Rectangle {
                             Rectangle {
                                 width: parent.width - 50; height: 50 
                                 Text { 
-                                    text: "Enable Adblocker"; font.pointSize: 9; 
+                                    text: "Enable Adblocker"; font.pointSize: xcbFontSizeAdjustment + 9; 
                                     anchors {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
@@ -240,7 +239,7 @@ Rectangle {
                             Rectangle {
                                 width: parent.width - 50; height: 50 
                                 Text { 
-                                    text: "Wallpaper"; font.pointSize: 9; 
+                                    text: "Wallpaper"; font.pointSize: xcbFontSizeAdjustment + 9; 
                                     anchors {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
@@ -254,7 +253,7 @@ Rectangle {
                                         verticalCenter: parent.verticalCenter
                                     }
                                     horizontalAlignment: Text.AlignRight
-                                    font.pointSize: 8
+                                    font.pointSize: xcbFontSizeAdjustment + 8
                                     rightPadding: 20 
                                     text: view.wallpaperUrl.toString().slice(view.wallpaperUrl.toString().lastIndexOf("/")+1)
                                     anchors {
@@ -281,13 +280,13 @@ Rectangle {
                             Rectangle {
                                 width: parent.width - 50; height: 80 
                                 Text { 
-                                    text: "Default UI"; font.pointSize: 9; 
+                                    text: "Default UI"; font.pointSize: xcbFontSizeAdjustment + 9; 
                                     anchors {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
                                     }
                                     Text { 
-                                        font.pointSize: 7; 
+                                        font.pointSize: xcbFontSizeAdjustment + 7; 
                                         color: '#5C5C5C'
                                         text: "Effective after reboot"
                                         anchors { top: parent.bottom; topMargin: 5 } 
@@ -304,23 +303,23 @@ Rectangle {
                                         text: "CutiePi Shell"
                                             contentItem: Text {
                                             text: parent.text
-                                            font.pointSize: 8
+                                            font.pointSize: xcbFontSizeAdjustment + 8
                                             color: '#5C5C5C'
                                             verticalAlignment: Text.AlignVCenter
                                             leftPadding: parent.indicator.width + parent.spacing
                                         }
                                         onCheckedChanged: {
                                             if (checked)
-                                                command.start("sudo", ["/usr/local/bin/set-cutiepi-shell-default.sh"]);
+                                                settings.setValue("defaultVisibility", "FullScreen");
                                             else
-                                                command.start("sudo", ["/usr/local/bin/set-lightdm-default.sh"]);
+                                                settings.setValue("defaultVisibility", "Hidden");
                                         }
                                     }
                                     RadioButton {
                                         text: "PIXEL Desktop"
                                             contentItem: Text {
                                             text: parent.text
-                                            font.pointSize: 8
+                                            font.pointSize: xcbFontSizeAdjustment + 8
                                             color: '#5C5C5C'
                                             verticalAlignment: Text.AlignVCenter
                                             leftPadding: parent.indicator.width + parent.spacing
@@ -343,14 +342,14 @@ Rectangle {
                                     Text { 
                                         anchors.centerIn: parent; 
                                         text: switchDesktopMouseArea.enabled ? "Switch to Desktop now" : "Loading..." ; 
-                                        font.pointSize: 8; color: 'white' 
+                                        font.pointSize: xcbFontSizeAdjustment + 8; color: 'white' 
                                     }
                                     MouseArea {
                                         id: switchDesktopMouseArea
                                         anchors.fill: parent
                                         onClicked: { 
-                                            command.start("/usr/local/bin/start-lightdm.sh", []);
-                                            enabled = false;
+                                            view.visibility = "Hidden"
+                                            //command.start("gsettings", ["set", "org.gnome.settings-daemon.peripherals.touchscreen", "orientation-lock", "false"]);
                                         }
                                     }
                                 }
@@ -378,7 +377,7 @@ Rectangle {
                         }
                         text: "About" 
                         color: '#5C5C5C'
-                        font.pointSize: 10
+                        font.pointSize: xcbFontSizeAdjustment + 10
                     }
 
                     Rectangle {
@@ -404,7 +403,7 @@ Rectangle {
                             Rectangle {
                                 width: parent.width - 50; height: 50 
                                 Text { 
-                                    text: "Build ID"; font.pointSize: 9; 
+                                    text: "Build ID"; font.pointSize: xcbFontSizeAdjustment + 9; 
                                     anchors {
                                         verticalCenter: parent.verticalCenter
                                         left: parent.left; 
@@ -419,51 +418,7 @@ Rectangle {
                                     }
                                     horizontalAlignment: Text.AlignRight
                                     text: "79222b7"
-                                    font.pointSize: 8
-                                    rightPadding: 20 
-                                }
-                            }
-                            Rectangle {
-                                width: parent.width - 50; height: 50 
-                                Text { 
-                                    text: "Firmware version"; font.pointSize: 9; 
-                                    anchors {
-                                        verticalCenter: parent.verticalCenter
-                                        left: parent.left; 
-                                    }
-                                } 
-                                Text { 
-                                    width: 120
-                                    color: '#5C5C5C'
-                                    anchors {
-                                        right: parent.right
-                                        verticalCenter: parent.verticalCenter
-                                    }
-                                    horizontalAlignment: Text.AlignRight
-                                    text: view.mcuVersion.split(/ /)[0]
-                                    font.pointSize: 8
-                                    rightPadding: 20 
-                                }
-                            }
-                            Rectangle {
-                                width: parent.width - 50; height: 50 
-                                Text { 
-                                    text: "Serial number"; font.pointSize: 9; 
-                                    anchors {
-                                        verticalCenter: parent.verticalCenter
-                                        left: parent.left; 
-                                    }
-                                } 
-                                Text { 
-                                    width: 120
-                                    color: '#5C5C5C'
-                                    anchors {
-                                        right: parent.right
-                                        verticalCenter: parent.verticalCenter
-                                    }
-                                    horizontalAlignment: Text.AlignRight
-                                    text: view.mcuVersion.split(/:/)[1]
-                                    font.pointSize: 8
+                                    font.pointSize: xcbFontSizeAdjustment + 8
                                     rightPadding: 20 
                                 }
                             }

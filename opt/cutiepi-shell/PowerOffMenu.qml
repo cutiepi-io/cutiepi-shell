@@ -24,6 +24,7 @@ Item {
                 color: "white"
                 leftPadding: 55
                 text: "Slide to power off"
+                font.pointSize: xcbFontSizeAdjustment + 12;
             }
 
             Rectangle {
@@ -50,7 +51,9 @@ Item {
                 }
                 
                 Text { anchors.centerIn: parent; 
-                    text: "\uf011"; font.family: fontAwesome.name }
+                    text: "\uf011"; font.family: fontAwesome.name 
+                    font.pointSize: xcbFontSizeAdjustment + 12    
+                }
 
                 NumberAnimation {
                     id: resetSwitchoffThumb
@@ -65,7 +68,7 @@ Item {
                     if(switchoffThumb.x >= (switchoffSlider.width - switchoffThumb.width - 10)){
                         switchoffThumb.x = 5;
                         switchoffScreen = false;
-                        pprocess.start("sudo", ["poweroff"]);
+                        process.start("sudo", ["poweroff"]);
                     }
                 }
             }
@@ -86,6 +89,7 @@ Item {
                 text: "\uf00d"
                 font.family: fontAwesome.name
 		        Text { text: "Cancel"; anchors.top: parent.bottom; anchors.topMargin: 40; 
+                    font.pointSize: xcbFontSizeAdjustment + 12;
                     anchors.horizontalCenter: parent.horizontalCenter; color: 'white' } 
             }
             MouseArea {

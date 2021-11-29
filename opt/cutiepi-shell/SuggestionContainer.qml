@@ -7,7 +7,7 @@ Item {
 
     width: root.portraitMode ? 400 : urlBar.width
     height: suggestionDialog.height + 55
-    anchors { top: urlBar.bottom; topMargin: -8; left: urlBar.left; }
+    anchors { top: urlBar.bottom; topMargin: -8 - xcbFontSizeAdjustment; left: urlBar.left; }
     visible: (urlText.focus && historyModel.count > 0) && root.state !== "setting"
     z: 3
 
@@ -26,7 +26,7 @@ Item {
             anchors.topMargin: -32
             anchors.left: parent.horizontalCenter
             anchors.leftMargin: root.portraitMode ? - (urlBar.width/2) : -20
-            font { family: fontAwesome.name; pointSize: 20 }
+            font { family: fontAwesome.name; pointSize: xcbFontSizeAdjustment + 25 }
             text: "\uF0D8"; 
             color: "#ECEFF4" 
         }
@@ -52,7 +52,7 @@ Item {
                             margins: 6; leftMargin: 10;
                         }                               
                         text: '<b>'+ model.title +'<b>' 
-                        font.pointSize: 8
+                        font.pointSize: xcbFontSizeAdjustment + 8
                         elide: Text.ElideRight
                     }  
                     Text {                          
@@ -63,7 +63,7 @@ Item {
                         }                               
                         color: "#3e3e3e"
                         text: model.url                 
-                        font.pointSize: 6 
+                        font.pointSize: xcbFontSizeAdjustment + 6 
                         elide: Text.ElideMiddle         
                     }
                     MouseArea { 
