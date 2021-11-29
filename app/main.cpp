@@ -17,7 +17,7 @@
     along with CutiePi shell.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QtWebEngine/qtwebengineglobal.h>
@@ -75,14 +75,15 @@ int main(int argc, char *argv[])
     qputenv("DISPLAY", ":0.0");
     qputenv("QT_IM_MODULE", "qtvirtualkeyboard");
     qputenv("QT_XCB_GL_INTEGRATION", "xcb_egl");
-    qputenv("QT_IM_MODULE", "qtvirtualkeyboard");
+    qputenv("QML_XHR_ALLOW_FILE_READ", "1");
 
+    qputenv("QTWEBENGINE_DIALOG_SET", "QtQuickControls2");
     qputenv("XDG_RUNTIME_DIR", "/run/user/1000");
     qputenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
 
     QtWebEngine::initialize();
-    QGuiApplication app(argc, argv);
-    QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
+    QApplication app(argc, argv);
+    //QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
     app.setOrganizationName("CutiePi");
     app.setOrganizationDomain("cutiepi.io");
     app.setApplicationName("Shell");
@@ -96,7 +97,7 @@ int main(int argc, char *argv[])
     RequestInterceptor interceptor;
     QQuickWebEngineProfile adblockProfile;
     adblockProfile.setUrlRequestInterceptor(&interceptor);
-    adblockProfile.setHttpUserAgent("Mozilla/5.0 (X11; CrOS armv7l 10895.56.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.102 Safari/537.36");
+    adblockProfile.setHttpUserAgent("Mozilla/5.0 (X11; CrOS aarch64 13816.82.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.218 Safari/537.36");
     adblockProfile.setStorageName("Profile");
     adblockProfile.setOffTheRecord(false);
     engine.rootContext()->setContextProperty("adblockProfile", &adblockProfile);

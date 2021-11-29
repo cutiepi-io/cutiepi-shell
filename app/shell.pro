@@ -1,6 +1,6 @@
 TARGET = shell
 TEMPLATE = app
-QT += qml quick webengine
+QT += qml quick webengine widgets
 
 SOURCES += main.cpp \
         backlight.cpp
@@ -18,5 +18,5 @@ contains(DEFINES, USE_ADBLOCK) {
 		third_party/hashset-cpp/hash_set.cc \
 		third_party/hashset-cpp/hashFn.cc
 
-	HEADERS = third_party/ad-block/ad_block_client.h 
+	HEADERS += third_party/ad-block/ad_block_client.h 
 }
