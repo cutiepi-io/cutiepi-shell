@@ -417,7 +417,7 @@ Rectangle {
                                         verticalCenter: parent.verticalCenter
                                     }
                                     horizontalAlignment: Text.AlignRight
-                                    text: "79222b7"
+                                    text: "b8f4e5c"
                                     font.pointSize: xcbFontSizeAdjustment + 8
                                     rightPadding: 20 
                                 }

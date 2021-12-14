@@ -88,7 +88,8 @@ Item {
                 color: "black"
                 text: "\uf00d"
                 font.family: fontAwesome.name
-		        Text { text: "Cancel"; anchors.top: parent.bottom; anchors.topMargin: 40; 
+                font.pointSize: xcbFontSizeAdjustment + 12 
+                Text { text: "Cancel"; anchors.top: parent.bottom; anchors.topMargin: 40; 
                     font.pointSize: xcbFontSizeAdjustment + 12;
                     anchors.horizontalCenter: parent.horizontalCenter; color: 'white' } 
             }

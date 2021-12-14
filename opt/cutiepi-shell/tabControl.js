@@ -68,6 +68,9 @@ function switchToTab(pageid) {
     itemMap[currentTab].visible = true;
     // assign url to text bar
     urlText.text = itemMap[currentTab].url;
+
+    if (itemMap[currentTab].url === "cutiepi://terminal")
+        VirtualKeyboardSettings.locale = "en_Terminal";
 }
 
 function goToSetting() {

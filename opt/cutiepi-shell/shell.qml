@@ -1120,6 +1120,22 @@ ApplicationWindow {
                         if (settingSheet.y > -535) { root.state = "setting" } else { root.state = "normal" }
                     }
                 }
+
+                // shortcut to hide the shell 
+                Rectangle {
+                    color: 'transparent'
+                    width: 40; height: 40
+                    anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 5 }
+                    Text { 
+                        anchors.centerIn: parent; 
+                        color: 'white'
+                        text: "\uf2f5"
+                        font.family: fontAwesome.name
+                        font.pointSize: xcbFontSizeAdjustment + 13
+                    }
+                    MouseArea { anchors.fill: parent; onClicked: { view.visibility = "Hidden" } } 
+                }
+
                 Timer {
                     id: screenshotTimer
                     interval: 3000
