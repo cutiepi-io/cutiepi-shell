@@ -29,6 +29,7 @@ function openNewAppTab(pageid, app) {
         case 'terminal': 
             tabData = { "title": "Terminal", "url": "cutiepi://terminal", "pageid": pageid, "icon": "icons/favicon.png" };
             appView = tabTermView.createObject(content, { id: pageid, objectName: pageid });
+            VirtualKeyboardSettings.locale = "en_Terminal";
             break;
         case 'factorymode': 
             tabData = { "title": "Factory Testing Mode", "url": "cutiepi://factorymode", "pageid": pageid, "icon": "icons/favicon.png" };

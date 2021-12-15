@@ -28,6 +28,7 @@ Cutiepi shell is written entirely in Qt using EGLFS QPA, and can be ported to [W
 
 - [Qt](http://download.qt.io/official_releases/qt/5.12/) `5.12` or later version 
 - [Yat](https://github.com/jorgen/yat) for terminal emulator 
+- [nemo-qml-plugin-dbus](https://github.com/sailfishos/nemo-qml-plugin-dbus.git) for DBus signals 
 - [libconnman-qt](https://git.sailfishos.org/mer-core/libconnman-qt) and [ConnMan](https://01.org/connman) for WiFi configuration 
 - [CutiePi firmware](https://github.com/cutiepi-io/cutiepi-firmware) and [middleware plugins](https://github.com/cutiepi-io/cutiepi-middleware) for battery and sleep/wake button related functions 
 - [ad-block](https://github.com/brave/ad-block) and [easylist](https://easylist.to/easylist/easylist.txt) for adblocker (optional) 
