@@ -1,5 +1,0 @@
-#!/bin/sh
-
-pkill -f setBrightness.py
-python /opt/cutiepi-shell/assets/setBrightness.py $1 &
-
