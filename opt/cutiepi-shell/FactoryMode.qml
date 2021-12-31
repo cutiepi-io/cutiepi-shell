@@ -39,6 +39,31 @@ Rectangle {
         }
     }
 
+    Rectangle { 
+        id: rebootButton
+        width: 280
+        height: 50
+        color: 'darkgray'
+        anchors {
+            right: finishTest.left
+            rightMargin: 20
+            bottom: parent.bottom
+            bottomMargin: 100
+        }
+        radius: 6
+        Text {
+            anchors.centerIn: parent;
+            text: "Reboot";
+            font.pointSize: xcbFontSizeAdjustment + 8; color: 'white'
+        }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                process.start("sudo", [ "reboot" ]);
+            }
+        } 
+    }
+
     Rectangle {
         id: finishTest
         width: 280

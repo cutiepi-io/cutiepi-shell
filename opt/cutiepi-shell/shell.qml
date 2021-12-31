@@ -51,6 +51,7 @@ ApplicationWindow {
     Rectangle { anchors.fill: parent; color: '#ececec' }
 
     property variant formatDateTimeString: "HH:mm"
+    property variant stableVol: 0
     property variant batteryPercentage: ""
     property variant queue: []
     property bool screenLocked: false
@@ -58,7 +59,7 @@ ApplicationWindow {
 
     property bool batteryCharging: false
     property variant wallpaperUrl: settings.value("wallpaperUrl", "file:///usr/share/rpd-wallpaper/boombox.png");
-    property variant wallpaperFontColor: 'white' // '#525353'
+    property variant wallpaperFontColor: 'white'
 
     property variant orientation: 270
     property variant portraitMode: (orientation === 180 || orientation === 0)
@@ -207,9 +208,9 @@ ApplicationWindow {
 
         signalsEnabled: true
         property variant batteryAttributes: 
-            { '4.20': 100, '3.99': 95, '3.97': 90, '3.92': 85, '3.87': 80, '3.83': 75, '3.79': 70, 
-              '3.75': 65, '3.73': 60, '3.70': 55, '3.68': 50, '3.66': 45, '3.65': 40, '3.63': 35, 
-              '3.62': 30, '3.60': 25, '3.58': 20, '3.545': 15, '3.51': 10, '3.42': 5, '3.00': 0 }
+            { '3.95': 100, '3.93': 95, '3.89': 90, '3.85': 85, '3.81': 80, '3.78': 75, '3.74': 70, 
+              '3.71': 65, '3.68': 60, '3.66': 55, '3.64': 50, '3.62': 45, '3.61': 40, '3.60': 35, 
+              '3.58': 30, '3.57': 25, '3.55': 20, '3.52': 15, '3.49': 10, '3.48': 5, '3.00': 0 }
 
         property variant battery
 
@@ -229,17 +230,26 @@ ApplicationWindow {
             }
         }
         onBatteryChanged: {
+            // real time sample from ADC 
             var currentVol = (battery/1000).toFixed(2); 
             var sum = 0; 
-            queue.push(currentVol); 
-            if (queue.length > 10)
-                queue.shift()
-            for (var i = 0; i < queue.length; i++) {
-                sum += parseFloat(queue[i])
+            view.queue.push(currentVol); 
+            if (view.queue.length > 15)
+                view.queue.shift()
+            for (var i = 0; i < view.queue.length; i++) {
+                sum += parseFloat(view.queue[i])
             }
-            var meanVol = (sum/queue.length).toFixed(2);
+
+            // mean voltage of 15 recent samples 
+            var meanVol = (sum/view.queue.length).toFixed(2);
+
+            // if diff greater than 10mV, assign to stable voltage 
+            if (Math.abs(meanVol - view.stableVol) >= 0.01)
+                view.stableVol = meanVol;
+
+            // calculate percentage based on attributes 
             for (var vol in batteryAttributes) {
-                if (meanVol >= parseFloat(vol)) { 
+                if (view.stableVol >= parseFloat(vol)) { 
                     var volPercent = batteryAttributes[vol];
                     batteryPercentage = volPercent
                     break;
@@ -1062,10 +1072,10 @@ ApplicationWindow {
                     Image {
                         id: batteryIndicatorImage
                         source: if (batteryCharging) { "icons/battery-full-charged-symbolic.svg" } 
-                            else if (batteryPercentage >= 80) { "icons/battery-full-symbolic.svg" } 
-                            else if (batteryPercentage >= 50) { "icons/battery-good-symbolic.svg" } 
-                            else if (batteryPercentage >= 30) { "icons/battery-low-symbolic.svg" } 
-                            else if (batteryPercentage >= 20) { "icons/battery-caution-symbolic.svg" } 
+                            else if (batteryPercentage >= 75) { "icons/battery-full-symbolic.svg" } 
+                            else if (batteryPercentage >= 45) { "icons/battery-good-symbolic.svg" } 
+                            else if (batteryPercentage >= 20) { "icons/battery-low-symbolic.svg" } 
+                            else if (batteryPercentage >= 10) { "icons/battery-caution-symbolic.svg" } 
                             else { "icons/battery-empty-symbolic.svg" } 
                         width: 34; height: width; sourceSize.width: width*2; sourceSize.height: height*2;
                     }
@@ -1344,12 +1354,16 @@ ApplicationWindow {
                 NumberAnimation { id: bounce; target: lockscreen; properties: "y"; to: 0; easing.type: Easing.InOutQuad; duration: 200 }
                 Text { 
                     id: lockscreenTime
-                    text: Qt.formatDateTime(new Date(), "HH:mm"); color: wallpaperFontColor; font.pointSize: xcbFontSizeAdjustment + 26; 
+                    text: Qt.formatDateTime(new Date(), "HH:mm"); color: wallpaperFontColor; 
+                    font.pointSize: xcbFontSizeAdjustment + 26; 
+                    style: Text.Raised; styleColor: "darkgray"; font.bold: true; 
                     anchors { left: parent.left; bottom: lockscreenDate.top; leftMargin: 30; bottomMargin: 5 }
                 }
                 Text { 
                     id: lockscreenDate
-                    text: Qt.formatDateTime(new Date(), "dddd, MMMM d"); color: wallpaperFontColor; font.pointSize: xcbFontSizeAdjustment + 16; 
+                    text: Qt.formatDateTime(new Date(), "dddd, MMMM d"); color: wallpaperFontColor; 
+                    font.pointSize: xcbFontSizeAdjustment + 16; 
+                    style: Text.Raised; styleColor: "darkgray"; font.bold: true; 
                     anchors { left: parent.left; bottom: parent.bottom; margins: 30 }
                 }
             }
