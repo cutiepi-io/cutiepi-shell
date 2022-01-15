@@ -90,16 +90,27 @@ ApplicationWindow {
         view.visibility = settings.value("defaultVisibility", "FullScreen");
         process.start("rfkill", ["unblock", "all"]);
         setAudioVolume(80);
-        brightnessSlider.value = 15; backlight.brightness = 15;
+        var brightnessLevel = settings.value("defaultBrightness", 15);
+        brightnessSlider.value = brightnessLevel; backlight.brightness = brightnessLevel;
         setOrientation(iioSensorProxy.getProperty("AccelerometerOrientation"));
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
 
-    function turnScreenOn() { brightnessSlider.value = 15; view.visibility = "FullScreen"; }
-    function turnScreenOff() { brightnessSlider.value = 0; backlight.brightness = 0; view.visibility = "FullScreen"; }
+    function turnScreenOn() {
+        brightnessSlider.value = settings.value("defaultBrightness", 15);
+        view.visibility = "FullScreen";
+    }
+    function turnScreenOff() {
+        settings.setValue("defaultBrightness", brightnessSlider.value);
+        brightnessSlider.value = 0; backlight.brightness = 0; view.visibility = "FullScreen";
+    }
+
     function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
-    function setScreenBrightness(val) { backlight.brightness = val }
+    function setScreenBrightness(val) { 
+        settings.setValue("defaultBrightness", val);
+        backlight.brightness = val 
+    }
 
     function setSystemClock() {
         systemClock.text = Qt.formatDateTime(new Date(), formatDateTimeString);
