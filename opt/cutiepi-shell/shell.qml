@@ -54,7 +54,9 @@ ApplicationWindow {
     property variant stableVol: 0
     property variant batteryPercentage: ""
     property variant queue: []
+    
     property bool screenLocked: false
+    property bool buttonOperatedFlag: false
     property bool switchoffScreen: false
 
     property bool batteryCharging: false
@@ -131,7 +133,7 @@ ApplicationWindow {
 
     onSwitchoffScreenChanged: {
         turnScreenOn();
-        if (switchoffScreen) {
+        if (switchoffScreen && buttonOperatedFlag) {
             root.state = "switchoff";
             view.visibility = "FullScreen";
         } else {
@@ -224,7 +226,7 @@ ApplicationWindow {
                     if (value == 5) batteryCharging = false;
                     break;
                 case 'button':
-                    if (value == 1) screenLocked = !screenLocked;
+                    if (value == 1) { screenLocked = !screenLocked; buttonOperatedFlag = true; }
                     if (value == 3) switchoffScreen = true;
                     break;
             }
@@ -547,7 +549,7 @@ ApplicationWindow {
 
                 // controls and label for app tabs, only visible if it's an app 
                 Text { 
-                    visible: hasTabOpen && (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
+                    visible: hasTabOpen && (Tab.itemMap[currentTab].url.toString().match('^cutiepi://') )
                     anchors {  left: hamburgerButton.right; leftMargin: 30; verticalCenter: parent.verticalCenter } 
                     text: Tab.itemMap[currentTab].title; color: "#3e3e3e"; font.pointSize: xcbFontSizeAdjustment + 12
                 }
@@ -555,7 +557,7 @@ ApplicationWindow {
                 Item {
                     id: backButton
                     width: 30; height: 35; anchors { left: hamburgerButton.right; margins: 20; top: parent.top; topMargin: xcbFontSizeAdjustment + 22 }
-                    visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
+                    visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('^cutiepi://') )
                     Text { 
                         id: backButtonIcon
                         text: "\uF053" 
@@ -581,7 +583,7 @@ ApplicationWindow {
                 width: parent.width - 510
                 height: 55
                 color: "#e7e7e5"
-                visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('cutiepi://') )
+                visible: !hasTabOpen || ! (Tab.itemMap[currentTab].url.toString().match('^cutiepi://') )
                 anchors {
                     top: parent.top
                     left: parent.left
