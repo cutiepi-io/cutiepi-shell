@@ -744,6 +744,7 @@ ApplicationWindow {
                     property variant targetY: parent.y
                     anchors.fill: parent
                     anchors.topMargin: 85
+                    visible: settingSheet.y > -height
                 }
 
                 // volume bar
