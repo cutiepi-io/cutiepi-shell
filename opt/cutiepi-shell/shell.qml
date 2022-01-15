@@ -98,17 +98,20 @@ ApplicationWindow {
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
 
     function turnScreenOn() {
-        brightnessSlider.value = settings.value("defaultBrightness", 15);
+        var brightnessLevel = settings.value("defaultBrightness", 15);
+        brightnessSlider.value = (brightnessLevel > 3) ? brightnessLevel : 7
         view.visibility = "FullScreen";
     }
     function turnScreenOff() {
-        settings.setValue("defaultBrightness", brightnessSlider.value);
+        if (brightnessSlider.value > 3)
+            settings.setValue("defaultBrightness", brightnessSlider.value);
         brightnessSlider.value = 0; backlight.brightness = 0; view.visibility = "FullScreen";
     }
 
     function setAudioVolume(vol) { process.start("amixer", ["set", "Master", vol+"%"]); }
-    function setScreenBrightness(val) { 
-        settings.setValue("defaultBrightness", val);
+    function setScreenBrightness(val) {
+        if (val > 3) 
+            settings.setValue("defaultBrightness", val);
         backlight.brightness = val 
     }
 
