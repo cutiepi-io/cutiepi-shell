@@ -53,7 +53,7 @@ ApplicationWindow {
 
         if (view.visibility === 5)  {
             var accel = iioSensorProxy.getProperty("AccelerometerOrientation");
-            if (accel === "undefined") accel = "normal";
+            if ((accel === "undefined") || (accelText === "")) accel = "normal";
 
             process.start("gsettings", ["set", "org.gnome.settings-daemon.peripherals.touchscreen", "orientation-lock", "true"]);
             setOrientationInit(accel)
@@ -81,7 +81,7 @@ ApplicationWindow {
     property variant orientation: 0
     property variant startedWithPortrait: (view.width >= 1368) ||  (view.width < view.height) 
 
-    property variant accelText: 'normal'
+    property variant accelText: ''
     property variant rotationProperty: {
        'left-up': { x: startedWithPortrait ? -240 : 0, y: startedWithPortrait ? 240 : 0, width: 1280, height: 800 },
        'right-up': { x: startedWithPortrait ? -240 : 0, y: startedWithPortrait ? 240 : 0, width: 1280, height: 800 },
@@ -107,10 +107,6 @@ ApplicationWindow {
         setAudioVolume(80);
         var brightnessLevel = settings.value("defaultBrightness", 15);
         brightnessSlider.value = brightnessLevel; backlight.brightness = brightnessLevel;
-
-        var accel = iioSensorProxy.getProperty("AccelerometerOrientation");
-        if (accel === "undefined") accel = "normal";
-        setOrientation(accel);
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
