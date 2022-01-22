@@ -43,10 +43,21 @@ import "tabControl.js" as Tab
 
 ApplicationWindow {
     id: view
-    width: 800
-    height: 1280
+    width: Screen.width
+    height: Screen.height
     visible: true
     visibility: "FullScreen"
+    onVisibilityChanged: {
+        if (view.visibility === 0)
+            process.start("gsettings", ["set", "org.gnome.settings-daemon.peripherals.touchscreen", "orientation-lock", "false"]);
+
+        if (view.visibility === 5)  {
+            var accel = iioSensorProxy.getProperty("AccelerometerOrientation");
+            process.start("gsettings", ["set", "org.gnome.settings-daemon.peripherals.touchscreen", "orientation-lock", "true"]);
+            setOrientationInit(accel)
+            setOrientation(accel)
+       }
+    }
 
     Rectangle { anchors.fill: parent; color: '#ececec' }
 
@@ -60,22 +71,24 @@ ApplicationWindow {
     property bool switchoffScreen: false
 
     property bool batteryCharging: false
+
     property variant wallpaperUrl: settings.value("wallpaperUrl", "file:///usr/share/rpd-wallpaper/boombox.png");
     property variant wallpaperFontColor: 'white'
 
-    property variant orientation: 270
-    property variant portraitMode: (orientation === 180 || orientation === 0)
+    property variant orientationInit: 0
+    property variant orientation: 0
+    property variant startedWithPortrait: (view.width < view.height) 
+
+    property variant accelText: ''
+    property variant rotationProperty: {
+       'left-up': { x: startedWithPortrait ? -240 : 0, y: startedWithPortrait ? 240 : 0, width: 1280, height: 800 },
+       'right-up': { x: startedWithPortrait ? -240 : 0, y: startedWithPortrait ? 240 : 0, width: 1280, height: 800 },
+       'bottom-up': { x: startedWithPortrait ? 0 : 240, y: startedWithPortrait ? 0 : -240, width: 800, height: 1280 },
+       'normal': { x: startedWithPortrait ? 0 : 240, y: startedWithPortrait ? 0 : -240, width: 800, height: 1280 },
+    }
+
     property variant sensorEnabled: true 
-    property variant keyboardPosition: { 
-        '270': { x: -40, y: 440, hidden_x: 360, hidden_y: 440 }, 
-        '180': { x: 0,  y: 0, hidden_x: 0, hidden_y: -250 }, 
-        '90': { x: -440, y: 440, hidden_x: -840, hidden_y: 440 }, 
-        '0': { x: 0, y: 1030, hidden_x: 0, hidden_y: 1280 } 
-    } 
-
     property variant xcbFontSizeAdjustment: 5
-
-    property string mcuVersion: ""
     property string currentTab: ""
     property bool hasTabOpen: (tabModel.count !== 0) && (typeof(Tab.itemMap[currentTab]) !== "undefined")
 
@@ -121,17 +134,34 @@ ApplicationWindow {
         lockscreenDate.text = Qt.formatDateTime(new Date(), "dddd, MMMM d"); 
     }
 
-    function setOrientation(val) {
+    function setOrientationInit(val) {
         switch(val) {
             case 'normal':
-                view.orientation = 0; break;
+                view.orientationInit = 0; break;
             case 'left-up':
-                view.orientation = 270; break;
+                view.orientationInit = 90; break;
             case 'bottom-up':
-                view.orientation = 180; break;
+                view.orientationInit = 180; break;
             case 'right-up':
-                view.orientation = 90; break;
+                view.orientationInit = 270; break;
         }
+        view.orientation = 0;
+    }
+
+    function setOrientation(val) {
+        view.accelText = val;
+        var tmp;
+        switch(val) {
+            case 'normal':
+                tmp = 0; break;
+            case 'left-up':
+                tmp = 90; break;
+            case 'bottom-up':
+                tmp = 180; break;
+            case 'right-up':
+                tmp = 270; break;
+        }
+        view.orientation = view.orientationInit - tmp
     }
 
     onScreenLockedChanged: {
@@ -250,6 +280,8 @@ ApplicationWindow {
             var currentVol = (battery/1000).toFixed(2); 
             var sum = 0; 
             view.queue.push(currentVol); 
+
+
             if (view.queue.length > 15)
                 view.queue.shift()
             for (var i = 0; i < view.queue.length; i++) {
@@ -308,8 +340,8 @@ ApplicationWindow {
     Rectangle {
         id: root
         color: "#ececec"
-        width: portraitMode ? 800 : 1280
-        height: portraitMode ? 1280 : 800 
+        width: rotationProperty[accelText].width
+        height: rotationProperty[accelText].height
 
         FontLoader {
             id: fontAwesome
@@ -317,8 +349,9 @@ ApplicationWindow {
         }
 
         // control the rotation of view 
-        x: portraitMode ? 0 : -240
-        y: portraitMode ? 0 : 240
+        x: rotationProperty[accelText].x
+        y: rotationProperty[accelText].y
+
         rotation: orientation
         Behavior on rotation {
             RotationAnimator { duration: 150; easing.type: Easing.InOutQuad; direction: RotationAnimator.Shortest }
@@ -1290,15 +1323,57 @@ ApplicationWindow {
                 }
             } // end of popup 
 
-
             // on-screen keyboard 
             InputPanel {
                 id: inputPanel
                 z: 89
-                x: keyboardPosition[view.orientation].hidden_x
-                y: keyboardPosition[view.orientation].hidden_y
-                width: portraitMode ? 800 : 1280
+                property real alignmentWorkaround: inputPanel.height * 0.1 
+
+                function getXCordinate(r) {
+                    if (r < 0) r += 360;
+                    switch (r) {
+                        case 0: return 0; 
+                        case 90: return -inputPanel.height - inputPanel.alignmentWorkaround;
+                        case 180: return 0;
+                        case 270: return (root.height === 1280) ? 
+                            root.width - inputPanel.alignmentWorkaround : 
+                            - inputPanel.alignmentWorkaround
+                    }
+                }
+                function getYCordinate(r) {
+                    if (r < 0) r += 360;
+                    switch (r) {
+                        case 0: return root.height - inputPanel.height; 
+                        case 90: return inputPanel.height + inputPanel.alignmentWorkaround;
+                        case 180: return 0;
+                        case 270: return inputPanel.height + inputPanel.alignmentWorkaround; 
+                    }
+                }
+                function getHiddenXCordinate(r) {
+                    if (r < 0) r += 360;
+                    switch (r) {
+                        case 0: return 0; 
+                        case 90: return -inputPanel.height - inputPanel.alignmentWorkaround - inputPanel.height;
+                        case 180: return 0;
+                        case 270: return (root.height === 1280) ? 
+                            root.width - inputPanel.alignmentWorkaround + inputPanel.height :
+                            - inputPanel.alignmentWorkaround + inputPanel.height 
+                    }
+                }
+                function getHiddenYCordinate(r) {
+                    if (r < 0) r += 360;
+                    switch (r) {
+                        case 0: return root.height;
+                        case 90: return inputPanel.height + inputPanel.alignmentWorkaround;
+                        case 180: return -inputPanel.height;
+                        case 270: return inputPanel.height + inputPanel.alignmentWorkaround; 
+                    }
+                }
+                x: getHiddenXCordinate(orientation)
+                y: getHiddenYCordinate(orientation)
+                width: rotationProperty[accelText].width
                 rotation: orientation
+
                 visible: false
                 onActiveChanged: visible = true
 
@@ -1307,8 +1382,8 @@ ApplicationWindow {
                     when: inputPanel.active && root.state != "locked" && root.state != "switchoff"
                     PropertyChanges {
                         target: inputPanel
-                        x: view.keyboardPosition[view.orientation].x
-                        y: view.keyboardPosition[view.orientation].y
+                        x: getXCordinate(orientation)
+                        y: getYCordinate(orientation)
                     }
                 }
                 transitions: Transition {
