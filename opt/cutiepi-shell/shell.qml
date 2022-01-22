@@ -53,6 +53,10 @@ ApplicationWindow {
 
         if (view.visibility === 5)  {
             var accel = iioSensorProxy.getProperty("AccelerometerOrientation");
+
+            if (accel === "undefined")
+                accel = "normal"
+
             process.start("gsettings", ["set", "org.gnome.settings-daemon.peripherals.touchscreen", "orientation-lock", "true"]);
             setOrientationInit(accel)
             setOrientation(accel)
@@ -1352,9 +1356,9 @@ ApplicationWindow {
                 function getHiddenXCordinate(r) {
                     if (r < 0) r += 360;
                     switch (r) {
-                        case 0: return 0; 
+                        case 0: return getXCordinate(r); 
                         case 90: return -inputPanel.height - inputPanel.alignmentWorkaround - inputPanel.height;
-                        case 180: return 0;
+                        case 180: return getXCordinate(r);
                         case 270: return (root.height === 1280) ? 
                             root.width - inputPanel.alignmentWorkaround + inputPanel.height :
                             - inputPanel.alignmentWorkaround + inputPanel.height 
@@ -1364,9 +1368,9 @@ ApplicationWindow {
                     if (r < 0) r += 360;
                     switch (r) {
                         case 0: return root.height;
-                        case 90: return inputPanel.height + inputPanel.alignmentWorkaround;
+                        case 90: return getYCordinate(r);
                         case 180: return -inputPanel.height;
-                        case 270: return inputPanel.height + inputPanel.alignmentWorkaround; 
+                        case 270: return getYCordinate(r); 
                     }
                 }
                 x: getHiddenXCordinate(orientation)
