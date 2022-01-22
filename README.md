@@ -40,4 +40,4 @@ Cutiepi shell is written entirely in Qt using EGLFS QPA, and can be ported to [W
 * This project uses [Font Awesome](https://fontawesome.com/license/free) fonts, which is licensed under `SIL OFL 1.1 License`. 
 
 * Icons are from the `gnome-user-docs` package with following copyright information `Copyright: Copyright (C) 2010 - 2014 Shaun McCance`, and licensed under `CC-BY-3.0`. 
-
+* Wallpapers are designed by [Even Wu](https://twitter.com/evenwu1978) licensed under CC-BY 
