@@ -53,9 +53,7 @@ ApplicationWindow {
 
         if (view.visibility === 5)  {
             var accel = iioSensorProxy.getProperty("AccelerometerOrientation");
-
-            if (accel === "undefined")
-                accel = "normal"
+            if (accel === "undefined") accel = "normal";
 
             process.start("gsettings", ["set", "org.gnome.settings-daemon.peripherals.touchscreen", "orientation-lock", "true"]);
             setOrientationInit(accel)
@@ -81,9 +79,9 @@ ApplicationWindow {
 
     property variant orientationInit: 0
     property variant orientation: 0
-    property variant startedWithPortrait: (view.width < view.height) 
+    property variant startedWithPortrait: (view.width >= 1368) ||  (view.width < view.height) 
 
-    property variant accelText: ''
+    property variant accelText: 'normal'
     property variant rotationProperty: {
        'left-up': { x: startedWithPortrait ? -240 : 0, y: startedWithPortrait ? 240 : 0, width: 1280, height: 800 },
        'right-up': { x: startedWithPortrait ? -240 : 0, y: startedWithPortrait ? 240 : 0, width: 1280, height: 800 },
@@ -109,7 +107,10 @@ ApplicationWindow {
         setAudioVolume(80);
         var brightnessLevel = settings.value("defaultBrightness", 15);
         brightnessSlider.value = brightnessLevel; backlight.brightness = brightnessLevel;
-        setOrientation(iioSensorProxy.getProperty("AccelerometerOrientation"));
+
+        var accel = iioSensorProxy.getProperty("AccelerometerOrientation");
+        if (accel === "undefined") accel = "normal";
+        setOrientation(accel);
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
@@ -602,7 +603,7 @@ ApplicationWindow {
                 Text { 
                     visible: hasTabOpen && (Tab.itemMap[currentTab].url.toString().match('^cutiepi://') )
                     anchors {  left: hamburgerButton.right; leftMargin: 30; verticalCenter: parent.verticalCenter } 
-                    text: Tab.itemMap[currentTab].title; color: "#3e3e3e"; font.pointSize: xcbFontSizeAdjustment + 12
+                    text: hasTabOpen ? Tab.itemMap[currentTab].title : ""; color: "#3e3e3e"; font.pointSize: xcbFontSizeAdjustment + 12
                 }
 
                 Item {
@@ -777,7 +778,7 @@ ApplicationWindow {
                 z: 3 
 
                 BlurPanel {
-                    target: Tab.itemMap[currentTab]
+                    target: hasTabOpen ? Tab.itemMap[currentTab] : null
                     property variant targetY: parent.y
                     anchors.fill: parent
                     anchors.topMargin: 85
@@ -1333,7 +1334,7 @@ ApplicationWindow {
                 z: 89
                 property real alignmentWorkaround: inputPanel.height * 0.1 
 
-                function getXCordinate(r) {
+                function getXCoordinate(r) {
                     if (r < 0) r += 360;
                     switch (r) {
                         case 0: return 0; 
@@ -1344,7 +1345,7 @@ ApplicationWindow {
                             - inputPanel.alignmentWorkaround
                     }
                 }
-                function getYCordinate(r) {
+                function getYCoordinate(r) {
                     if (r < 0) r += 360;
                     switch (r) {
                         case 0: return root.height - inputPanel.height; 
@@ -1353,28 +1354,26 @@ ApplicationWindow {
                         case 270: return inputPanel.height + inputPanel.alignmentWorkaround; 
                     }
                 }
-                function getHiddenXCordinate(r) {
+                function getHiddenXCoordinate(r) {
                     if (r < 0) r += 360;
                     switch (r) {
-                        case 0: return getXCordinate(r); 
-                        case 90: return -inputPanel.height - inputPanel.alignmentWorkaround - inputPanel.height;
-                        case 180: return getXCordinate(r);
-                        case 270: return (root.height === 1280) ? 
-                            root.width - inputPanel.alignmentWorkaround + inputPanel.height :
-                            - inputPanel.alignmentWorkaround + inputPanel.height 
+                        case 0: return getXCoordinate(r); 
+                        case 90: return (getXCoordinate(r) - inputPanel.height);
+                        case 180: return getXCoordinate(r);
+                        case 270: return (getXCoordinate(r) + inputPanel.height);
                     }
                 }
-                function getHiddenYCordinate(r) {
+                function getHiddenYCoordinate(r) {
                     if (r < 0) r += 360;
                     switch (r) {
-                        case 0: return root.height;
-                        case 90: return getYCordinate(r);
-                        case 180: return -inputPanel.height;
-                        case 270: return getYCordinate(r); 
+                        case 0: return (getYCoordinate(r) + inputPanel.height);
+                        case 90: return getYCoordinate(r);
+                        case 180: return (getYCoordinate(r) - inputPanel.height);
+                        case 270: return getYCoordinate(r); 
                     }
                 }
-                x: getHiddenXCordinate(orientation)
-                y: getHiddenYCordinate(orientation)
+                x: getHiddenXCoordinate(orientation)
+                y: getHiddenYCoordinate(orientation)
                 width: rotationProperty[accelText].width
                 rotation: orientation
 
@@ -1386,8 +1385,8 @@ ApplicationWindow {
                     when: inputPanel.active && root.state != "locked" && root.state != "switchoff"
                     PropertyChanges {
                         target: inputPanel
-                        x: getXCordinate(orientation)
-                        y: getYCordinate(orientation)
+                        x: getXCoordinate(orientation)
+                        y: getYCoordinate(orientation)
                     }
                 }
                 transitions: Transition {
