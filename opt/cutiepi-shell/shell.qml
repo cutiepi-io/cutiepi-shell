@@ -1256,6 +1256,7 @@ ApplicationWindow {
                             margins: 10
                             topMargin: 30
                         }
+                        inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                         width: parent.width - 50
                         height: 40
                         font.pointSize: xcbFontSizeAdjustment + 9
