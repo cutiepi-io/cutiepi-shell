@@ -102,6 +102,9 @@ ApplicationWindow {
     Component.onCompleted: {
         //if (settings.value("untested", "true") === "true")
         //    Tab.openNewAppTab("page-"+Tab.salt(), 'factorymode');
+
+        // bump default volume 
+        process.start("pactl", ["--", "set-sink-volume", "0", "120%"]);
         view.visibility = settings.value("defaultVisibility", "FullScreen");
         process.start("rfkill", ["unblock", "all"]);
         setAudioVolume(80);
