@@ -73,6 +73,10 @@ ApplicationWindow {
     property bool switchoffScreen: false
 
     property bool batteryCharging: false
+    onBatteryChargingChanged: {
+        if (batteryCharging) batteryText.text = "Charging";
+        if (!batteryCharging) view.queue = [];
+    }
 
     property variant wallpaperUrl: settings.value("wallpaperUrl", "file:///usr/share/rpd-wallpaper/boombox.png");
     property variant wallpaperFontColor: 'white'
@@ -285,7 +289,6 @@ ApplicationWindow {
             var sum = 0; 
             view.queue.push(currentVol); 
 
-
             if (view.queue.length > 15)
                 view.queue.shift()
             for (var i = 0; i < view.queue.length; i++) {
@@ -306,6 +309,11 @@ ApplicationWindow {
                     batteryPercentage = volPercent
                     break;
                 }
+            }
+
+            if (!batteryCharging) { 
+                if (view.queue.length < 5) batteryText.text = "Checking..";
+                else batteryText.text = batteryPercentage + "%";
             }
         }
     }
@@ -1114,9 +1122,10 @@ ApplicationWindow {
                     spacing: 10
 
                     Text { 
-                        font.pointSize: xcbFontSizeAdjustment + 10
-                        text: (batteryCharging) ? "charging" : batteryPercentage + "%"
-                        anchors.topMargin: 5
+                        id: batteryText
+                        font.pointSize: xcbFontSizeAdjustment + 8
+                        text: ""
+                        anchors.topMargin: 7
                         anchors.rightMargin: (batteryCharging) ? -5 : -2 
                         anchors.top: parent.top 
                         color: 'white'
