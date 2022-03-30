@@ -476,29 +476,30 @@ ApplicationWindow {
                 }
                 highlightMoveDuration: 2
                 highlightFollowsCurrentItem: true 
-                footer: Rectangle { 
-                    width: Tab.DrawerWidth
-                    height: 80
-                    color: "transparent"
-                    Text { 
-                        text: "\uF013"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: xcbFontSizeAdjustment + 10
-                        anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
-                    }
-                    Text { 
-                        text: "<b>Settings</b>"
-                        color: '#3e3e3e'
-                        font.pointSize: xcbFontSizeAdjustment + 10
-                        anchors { top: parent.top; left: parent.left; margins: 18; leftMargin: 70; }
-                    }
-                    MouseArea { 
-                        anchors.fill: parent; 
-                        enabled: (root.state == "drawer") 
-                        onClicked: {
-                            Tab.goToSetting();
-                        }
+            }
+            Rectangle { 
+                id: footer
+                width: Tab.DrawerWidth
+                height: 80
+                color: "transparent"
+                anchors { bottom: parent.bottom; left: parent.left }
+                Text { 
+                    text: "\uF013"; font.family: fontAwesome.name; color: "#3e3e3e"; font.pointSize: xcbFontSizeAdjustment + 10
+                    anchors { top: parent.top; left: parent.left; margins: 20; leftMargin: 30 }
+                }
+                Text { 
+                    text: "<b>Settings</b>"
+                    color: '#3e3e3e'
+                    font.pointSize: xcbFontSizeAdjustment + 10
+                    anchors { top: parent.top; left: parent.left; margins: 18; leftMargin: 70; }
+                }
+                MouseArea { 
+                    anchors.fill: parent; 
+                    enabled: (root.state == "drawer") 
+                    onClicked: {
+                        Tab.goToSetting();
                     }
                 }
-                footerPositioning: ListView.OverlayFooter
             }
         }
 
@@ -1123,9 +1124,9 @@ ApplicationWindow {
 
                     Text { 
                         id: batteryText
-                        font.pointSize: xcbFontSizeAdjustment + 8
+                        font.pointSize: xcbFontSizeAdjustment + 10
                         text: ""
-                        anchors.topMargin: 7
+                        anchors.topMargin: 5
                         anchors.rightMargin: (batteryCharging) ? -5 : -2 
                         anchors.top: parent.top 
                         color: 'white'
