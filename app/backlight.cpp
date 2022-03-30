@@ -5,15 +5,12 @@ Backlight::Backlight(): QObject()
     /* find valid backlight path; search here: */
     m_path = "/sys/class/backlight/";
 
-    try
-    {
-        QDir dir(m_path);
+    QDir dir(m_path);
+    if (!dir.isEmpty()) {
         QFileInfoList list = dir.entryInfoList();
-        m_path =  list.at(2).absoluteFilePath();
+        m_path = list.at(2).absoluteFilePath();
         m_backlightOK = true;
-    }
-    catch (...)
-    {
+    } else {
         m_backlightOK = false;
     }
 
