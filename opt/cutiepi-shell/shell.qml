@@ -284,365 +284,360 @@ ApplicationWindow {
             }
         }
         onBatteryChanged: {
-            var sum = 0;
+            view.queue.push(battery); // there is no need to divide to get value volts, just use raw mv
             if (view.queue.length > 15) {
                 view.queue.shift();
             }
-            view.queue.push(battery); // there is no need to divide to get value volts, just use raw mv
-            var nSum = 0;
+            var sum = 0;
+            var nSum = view.queue.length;
             if (view.queue[0] !== undefined) {
                 sum += view.queue[0];
-                nSum++;
-            } else if (view.queue[1] !== undefined) {
+            }
+            if (view.queue[1] !== undefined) {
                 sum += view.queue[1];
-                nSum++;
-            } else if (view.queue[2] !== undefined) {
+            }
+            if (view.queue[2] !== undefined) {
                 sum += view.queue[2];
-                nSum++;
-            } else if (view.queue[3] !== undefined) {
+            }
+            if (view.queue[3] !== undefined) {
                 sum += view.queue[3];
-                nSum++;
-            } else if (view.queue[4] !== undefined) {
+            }
+            if (view.queue[4] !== undefined) {
                 sum += view.queue[4];
-                nSum++;
-            } else if (view.queue[5] !== undefined) {
+            }
+            if (view.queue[5] !== undefined) {
                 sum += view.queue[5];
-                nSum++;
-            } else if (view.queue[6] !== undefined) {
+            }
+            if (view.queue[6] !== undefined) {
                 sum += view.queue[6];
-                nSum++;
-            } else if (view.queue[7] !== undefined) {
+            }
+            if (view.queue[7] !== undefined) {
                 sum += view.queue[7];
-                nSum++;
-            } else if (view.queue[8] !== undefined) {
+            }
+            if (view.queue[8] !== undefined) {
                 sum += view.queue[8];
-                nSum++;
-            } else if (view.queue[9] !== undefined) {
+            }
+            if (view.queue[9] !== undefined) {
                 sum += view.queue[9];
-                nSum++;
-            } else if (view.queue[10] !== undefined) {
+            }
+            if (view.queue[10] !== undefined) {
                 sum += view.queue[10];
-                nSum++;
-            } else if (view.queue[11] !== undefined) {
+            }
+            if (view.queue[11] !== undefined) {
                 sum += view.queue[11];
-                nSum++;
-            } else if (view.queue[12] !== undefined) {
+            }
+            if (view.queue[12] !== undefined) {
                 sum += view.queue[12];
-                nSum++;
-            } else if (view.queue[13] !== undefined) {
+            }
+            if (view.queue[13] !== undefined) {
                 sum += view.queue[13];
-                nSum++;
-            } else if (view.queue[14] !== undefined) {
+            }
+            if (view.queue[14] !== undefined) {
                 sum += view.queue[14];
-                nSum++;
-            } else if (view.queue[15] !== undefined) {
-                sum += view.queue[15];
-                nSum++;
             }
             var meanVol = ~~(sum / nSum); //strip decimal bits (round to integer)
-            console.log(meanVol);
             switch (true) {
-                case meanVol > 3887:
+                case (meanVol > 3887):
                     batteryPercentage = 100;
                     break;
-                case meanVol > 3885 && meanVol <= 3887:
+                case (meanVol > 3885 && meanVol <= 3887):
                     batteryPercentage = 99;
                     break;
-                case meanVol > 3883 && meanVol <= 3885:
+                case (meanVol > 3883 && meanVol <= 3885):
                     batteryPercentage = 98;
                     break;
-                case meanVol > 3881 && meanVol <= 3883:
+                case (meanVol > 3881 && meanVol <= 3883):
                     batteryPercentage = 97;
                     break;
-                case meanVol > 3880 && meanVol <= 3881:
+                case (meanVol > 3880 && meanVol <= 3881):
                     batteryPercentage = 96;
                     break;
-                case meanVol > 3874 && meanVol <= 3880:
+                case (meanVol > 3874 && meanVol <= 3880):
                     batteryPercentage = 95;
                     break;
-                case meanVol > 3870 && meanVol <= 3874:
+                case (meanVol > 3870 && meanVol <= 3874):
                     batteryPercentage = 94;
                     break;
-                case meanVol > 3866 && meanVol <= 3870:
+                case (meanVol > 3866 && meanVol <= 3870):
                     batteryPercentage = 93;
                     break;
-                case meanVol > 3861 && meanVol <= 3866:
+                case (meanVol > 3861 && meanVol <= 3866):
                     batteryPercentage = 92;
                     break;
-                case meanVol > 3860 && meanVol <= 3861:
+                case (meanVol > 3860 && meanVol <= 3861):
                     batteryPercentage = 91;
                     break;
-                case meanVol > 3848 && meanVol <= 3860:
+                case (meanVol > 3848 && meanVol <= 3860):
                     batteryPercentage = 90;
                     break;
-                case meanVol > 3840 && meanVol <= 3848:
+                case (meanVol > 3840 && meanVol <= 3848):
                     batteryPercentage = 89;
                     break;
-                case meanVol > 3831 && meanVol <= 3840:
+                case (meanVol > 3831 && meanVol <= 3840):
                     batteryPercentage = 88;
                     break;
-                case meanVol > 3821 && meanVol <= 3831:
+                case (meanVol > 3821 && meanVol <= 3831):
                     batteryPercentage = 87;
                     break;
-                case meanVol > 3820 && meanVol <= 3821:
+                case (meanVol > 3820 && meanVol <= 3821):
                     batteryPercentage = 86;
                     break;
-                case meanVol > 3814 && meanVol <= 3820:
+                case (meanVol > 3814 && meanVol <= 3820):
                     batteryPercentage = 85;
                     break;
-                case meanVol > 3810 && meanVol <= 3814:
+                case (meanVol > 3810 && meanVol <= 3814):
                     batteryPercentage = 84;
                     break;
-                case meanVol > 3806 && meanVol <= 3810:
+                case (meanVol > 3806 && meanVol <= 3810):
                     batteryPercentage = 83;
                     break;
-                case meanVol > 3801 && meanVol <= 3806:
+                case (meanVol > 3801 && meanVol <= 3806):
                     batteryPercentage = 82;
                     break;
-                case meanVol > 3800 && meanVol <= 3801:
+                case (meanVol > 3800 && meanVol <= 3801):
                     batteryPercentage = 81;
                     break;
-                case meanVol > 3788 && meanVol <= 3800:
+                case (meanVol > 3788 && meanVol <= 3800):
                     batteryPercentage = 80;
                     break;
-                case meanVol > 3780 && meanVol <= 3788:
+                case (meanVol > 3780 && meanVol <= 3788):
                     batteryPercentage = 79;
                     break;
-                case meanVol > 3771 && meanVol <= 3780:
+                case (meanVol > 3771 && meanVol <= 3780):
                     batteryPercentage = 78;
                     break;
-                case meanVol > 3761 && meanVol <= 3771:
+                case (meanVol > 3761 && meanVol <= 3771):
                     batteryPercentage = 77;
                     break;
-                case meanVol > 3760 && meanVol <= 3761:
+                case (meanVol > 3760 && meanVol <= 3761):
                     batteryPercentage = 76;
                     break;
-                case meanVol > 3750 && meanVol <= 3760:
+                case (meanVol > 3750 && meanVol <= 3760):
                     batteryPercentage = 75;
                     break;
-                case meanVol > 3744 && meanVol <= 3750:
+                case (meanVol > 3744 && meanVol <= 3750):
                     batteryPercentage = 74;
                     break;
-                case meanVol > 3738 && meanVol <= 3744:
+                case (meanVol > 3738 && meanVol <= 3744):
                     batteryPercentage = 73;
                     break;
-                case meanVol > 3731 && meanVol <= 3738:
+                case (meanVol > 3731 && meanVol <= 3738):
                     batteryPercentage = 72;
                     break;
-                case meanVol > 3730 && meanVol <= 3731:
+                case (meanVol > 3730 && meanVol <= 3731):
                     batteryPercentage = 71;
                     break;
-                case meanVol > 3718 && meanVol <= 3730:
+                case (meanVol > 3718 && meanVol <= 3730):
                     batteryPercentage = 70;
                     break;
-                case meanVol > 3710 && meanVol <= 3718:
+                case (meanVol > 3710 && meanVol <= 3718):
                     batteryPercentage = 69;
                     break;
-                case meanVol > 3701 && meanVol <= 3710:
+                case (meanVol > 3701 && meanVol <= 3710):
                     batteryPercentage = 68;
                     break;
-                case meanVol > 3691 && meanVol <= 3701:
+                case (meanVol > 3691 && meanVol <= 3701):
                     batteryPercentage = 67;
                     break;
-                case meanVol > 3690 && meanVol <= 3691:
+                case (meanVol > 3690 && meanVol <= 3691):
                     batteryPercentage = 66;
                     break;
-                case meanVol > 3684 && meanVol <= 3690:
+                case (meanVol > 3684 && meanVol <= 3690):
                     batteryPercentage = 65;
                     break;
-                case meanVol > 3680 && meanVol <= 3684:
+                case (meanVol > 3680 && meanVol <= 3684):
                     batteryPercentage = 64;
                     break;
-                case meanVol > 3676 && meanVol <= 3680:
+                case (meanVol > 3676 && meanVol <= 3680):
                     batteryPercentage = 63;
                     break;
-                case meanVol > 3671 && meanVol <= 3676:
+                case (meanVol > 3671 && meanVol <= 3676):
                     batteryPercentage = 62;
                     break;
-                case meanVol > 3670 && meanVol <= 3671:
+                case (meanVol > 3670 && meanVol <= 3671):
                     batteryPercentage = 61;
                     break;
-                case meanVol > 3664 && meanVol <= 3670:
+                case (meanVol > 3664 && meanVol <= 3670):
                     batteryPercentage = 60;
                     break;
-                case meanVol > 3660 && meanVol <= 3664:
+                case (meanVol > 3660 && meanVol <= 3664):
                     batteryPercentage = 59;
                     break;
-                case meanVol > 3656 && meanVol <= 3660:
+                case (meanVol > 3656 && meanVol <= 3660):
                     batteryPercentage = 58;
                     break;
-                case meanVol > 3651 && meanVol <= 3656:
+                case (meanVol > 3651 && meanVol <= 3656):
                     batteryPercentage = 57;
                     break;
-                case meanVol > 3650 && meanVol <= 3651:
+                case (meanVol > 3650 && meanVol <= 3651):
                     batteryPercentage = 56;
                     break;
-                case meanVol > 3644 && meanVol <= 3650:
+                case (meanVol > 3644 && meanVol <= 3650):
                     batteryPercentage = 55;
                     break;
-                case meanVol > 3640 && meanVol <= 3644:
+                case (meanVol > 3640 && meanVol <= 3644):
                     batteryPercentage = 54;
                     break;
-                case meanVol > 3636 && meanVol <= 3640:
+                case (meanVol > 3636 && meanVol <= 3640):
                     batteryPercentage = 53;
                     break;
-                case meanVol > 3631 && meanVol <= 3636:
+                case (meanVol > 3631 && meanVol <= 3636):
                     batteryPercentage = 52;
                     break;
-                case meanVol > 3630 && meanVol <= 3631:
+                case (meanVol > 3630 && meanVol <= 3631):
                     batteryPercentage = 51;
                     break;
-                case meanVol > 3624 && meanVol <= 3630:
+                case (meanVol > 3624 && meanVol <= 3630):
                     batteryPercentage = 50;
                     break;
-                case meanVol > 3620 && meanVol <= 3624:
+                case (meanVol > 3620 && meanVol <= 3624):
                     batteryPercentage = 49;
                     break;
-                case meanVol > 3616 && meanVol <= 3620:
+                case (meanVol > 3616 && meanVol <= 3620):
                     batteryPercentage = 48;
                     break;
-                case meanVol > 3611 && meanVol <= 3616:
+                case (meanVol > 3611 && meanVol <= 3616):
                     batteryPercentage = 47;
                     break;
-                case meanVol > 3610 && meanVol <= 3611:
+                case (meanVol > 3610 && meanVol <= 3611):
                     batteryPercentage = 46;
                     break;
-                case meanVol > 3607 && meanVol <= 3610:
+                case (meanVol > 3607 && meanVol <= 3610):
                     batteryPercentage = 45;
                     break;
-                case meanVol > 3605 && meanVol <= 3607:
+                case (meanVol > 3605 && meanVol <= 3607):
                     batteryPercentage = 44;
                     break;
-                case meanVol > 3603 && meanVol <= 3605:
+                case (meanVol > 3603 && meanVol <= 3605):
                     batteryPercentage = 43;
                     break;
-                case meanVol > 3601 && meanVol <= 3603:
+                case (meanVol > 3601 && meanVol <= 3603):
                     batteryPercentage = 42;
                     break;
-                case meanVol > 3600 && meanVol <= 3601:
+                case (meanVol > 3600 && meanVol <= 3601):
                     batteryPercentage = 41;
                     break;
-                case meanVol > 3597 && meanVol <= 3600:
+                case (meanVol > 3597 && meanVol <= 3600):
                     batteryPercentage = 40;
                     break;
-                case meanVol > 3595 && meanVol <= 3597:
+                case (meanVol > 3595 && meanVol <= 3597):
                     batteryPercentage = 39;
                     break;
-                case meanVol > 3593 && meanVol <= 3595:
+                case (meanVol > 3593 && meanVol <= 3595):
                     batteryPercentage = 38;
                     break;
-                case meanVol > 3591 && meanVol <= 3593:
+                case (meanVol > 3591 && meanVol <= 3593):
                     batteryPercentage = 37;
                     break;
-                case meanVol > 3590 && meanVol <= 3591:
+                case (meanVol > 3590 && meanVol <= 3591):
                     batteryPercentage = 36;
                     break;
-                case meanVol > 3580 && meanVol <= 3590:
+                case (meanVol > 3580 && meanVol <= 3590):
                     batteryPercentage = 35;
                     break;
-                case meanVol > 3574 && meanVol <= 3580:
+                case (meanVol > 3574 && meanVol <= 3580):
                     batteryPercentage = 34;
                     break;
-                case meanVol > 3568 && meanVol <= 3574:
+                case (meanVol > 3568 && meanVol <= 3574):
                     batteryPercentage = 33;
                     break;
-                case meanVol > 3561 && meanVol <= 3568:
+                case (meanVol > 3561 && meanVol <= 3568):
                     batteryPercentage = 32;
                     break;
-                case meanVol > 3560 && meanVol <= 3561:
+                case (meanVol > 3560 && meanVol <= 3561):
                     batteryPercentage = 31;
                     break;
-                case meanVol > 3557 && meanVol <= 3560:
+                case (meanVol > 3557 && meanVol <= 3560):
                     batteryPercentage = 30;
                     break;
-                case meanVol > 3555 && meanVol <= 3557:
+                case (meanVol > 3555 && meanVol <= 3557):
                     batteryPercentage = 29;
                     break;
-                case meanVol > 3553 && meanVol <= 3555:
+                case (meanVol > 3553 && meanVol <= 3555):
                     batteryPercentage = 28;
                     break;
-                case meanVol > 3551 && meanVol <= 3553:
+                case (meanVol > 3551 && meanVol <= 3553):
                     batteryPercentage = 27;
                     break;
-                case meanVol > 3550 && meanVol <= 3551:
+                case (meanVol > 3550 && meanVol <= 3551):
                     batteryPercentage = 26;
                     break;
-                case meanVol > 3544 && meanVol <= 3550:
+                case (meanVol > 3544 && meanVol <= 3550):
                     batteryPercentage = 25;
                     break;
-                case meanVol > 3540 && meanVol <= 3544:
+                case (meanVol > 3540 && meanVol <= 3544):
                     batteryPercentage = 24;
                     break;
-                case meanVol > 3536 && meanVol <= 3540:
+                case (meanVol > 3536 && meanVol <= 3540):
                     batteryPercentage = 23;
                     break;
-                case meanVol > 3531 && meanVol <= 3536:
+                case (meanVol > 3531 && meanVol <= 3536):
                     batteryPercentage = 22;
                     break;
-                case meanVol > 3530 && meanVol <= 3531:
+                case (meanVol > 3530 && meanVol <= 3531):
                     batteryPercentage = 21;
                     break;
-                case meanVol > 3524 && meanVol <= 3530:
+                case (meanVol > 3524 && meanVol <= 3530):
                     batteryPercentage = 20;
                     break;
-                case meanVol > 3520 && meanVol <= 3524:
+                case (meanVol > 3520 && meanVol <= 3524):
                     batteryPercentage = 19;
                     break;
-                case meanVol > 3516 && meanVol <= 3520:
+                case (meanVol > 3516 && meanVol <= 3520):
                     batteryPercentage = 18;
                     break;
-                case meanVol > 3511 && meanVol <= 3516:
+                case (meanVol > 3511 && meanVol <= 3516):
                     batteryPercentage = 17;
                     break;
-                case meanVol > 3510 && meanVol <= 3511:
+                case (meanVol > 3510 && meanVol <= 3511):
                     batteryPercentage = 16;
                     break;
-                case meanVol > 3504 && meanVol <= 3510:
+                case (meanVol > 3504 && meanVol <= 3510):
                     batteryPercentage = 15;
                     break;
-                case meanVol > 3500 && meanVol <= 3504:
+                case (meanVol > 3500 && meanVol <= 3504):
                     batteryPercentage = 14;
                     break;
-                case meanVol > 3496 && meanVol <= 3500:
+                case (meanVol > 3496 && meanVol <= 3500):
                     batteryPercentage = 13;
                     break;
-                case meanVol > 3491 && meanVol <= 3496:
+                case (meanVol > 3491 && meanVol <= 3496):
                     batteryPercentage = 12;
                     break;
-                case meanVol > 3490 && meanVol <= 3491:
+                case (meanVol > 3490 && meanVol <= 3491):
                     batteryPercentage = 11;
                     break;
-                case meanVol > 3487 && meanVol <= 3490:
+                case (meanVol > 3487 && meanVol <= 3490):
                     batteryPercentage = 10;
                     break;
-                case meanVol > 3485 && meanVol <= 3487:
+                case (meanVol > 3485 && meanVol <= 3487):
                     batteryPercentage = 9;
                     break;
-                case meanVol > 3483 && meanVol <= 3485:
+                case (meanVol > 3483 && meanVol <= 3485):
                     batteryPercentage = 8;
                     break;
-                case meanVol > 3481 && meanVol <= 3483:
+                case (meanVol > 3481 && meanVol <= 3483):
                     batteryPercentage = 7;
                     break;
-                case meanVol > 3480 && meanVol <= 3481:
+                case (meanVol > 3480 && meanVol <= 3481):
                     batteryPercentage = 6;
                     break;
-                case meanVol > 3355 && meanVol <= 3480:
+                case (meanVol > 3355 && meanVol <= 3480):
                     batteryPercentage = 5;
                     break;
-                case meanVol > 3281 && meanVol <= 3355:
+                case (meanVol > 3281 && meanVol <= 3355):
                     batteryPercentage = 4;
                     break;
-                case meanVol > 3198 && meanVol <= 3281:
+                case (meanVol > 3198 && meanVol <= 3281):
                     batteryPercentage = 3;
                     break;
-                case meanVol > 3105 && meanVol <= 3198:
+                case (meanVol > 3105 && meanVol <= 3198):
                     batteryPercentage = 2;
                     break;
-                case meanVol > 3105:
+                case (meanVol > 3105):
                     batteryPercentage = 1;
                     break;
-                case meanVol > 3000:
+                case (meanVol > 3000):
                     //fall through to default case
                 default:
                     // doesnt seem possible but just in case something weird happened
