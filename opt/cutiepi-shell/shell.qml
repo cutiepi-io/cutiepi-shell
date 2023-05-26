@@ -35,7 +35,6 @@ import QtGraphicalEffects 1.0
 import Qt.labs.platform 1.1
 import Qt.labs.settings 1.0
 import Nemo.DBus 2.0
-import MeeGo.Connman 0.2 
 import Yat 1.0 as Yat
 
 import Process 1.0
@@ -60,6 +59,7 @@ ApplicationWindow {
             setOrientation(accel)
        }
     }
+    flags: Qt.WindowStaysOnTopHint | Qt.X11BypassWindowManagerHint 
 
     Rectangle { anchors.fill: parent; color: '#ececec' }
 
@@ -114,6 +114,10 @@ ApplicationWindow {
         setAudioVolume(80);
         var brightnessLevel = settings.value("defaultBrightness", 15);
         brightnessSlider.value = brightnessLevel; backlight.brightness = brightnessLevel;
+
+        // FIXME: listen to network state change
+        nm.toggleWifi(); 
+        nm.toggleWifi();
     }
 
     function loadUrlWrapper(url) { Tab.loadUrl(url) }
@@ -192,6 +196,30 @@ ApplicationWindow {
             root.state = "normal"
         }
     }
+    NetworkManager {
+        id: nm
+        property var networkName: ""
+        onNetworkStateChanged: {
+            if ((nm.networkState == "unknown") || (nm.networkState == "diconncted" ) || (nm.networkState == "failed" )) 
+                wifiIndicator.source = "icons/network-wireless-signal-none-symbolic.svg"
+            else if ((nm.networkState == "connecting") || (nm.networkState == "disconnecting")) 
+                wifiIndicator.source =  "icons/network-wireless-acquiring-symbolic.svg"
+            else if (nm.networkState == "connected")
+                wifiIndicator.source = "icons/network-wireless-signal-excellent-symbolic.svg"
+            else 
+                wifiIndicator.source = "icons/network-wireless-connected-symbolic.svg"
+        }
+        onCurrentStrengthChanged: {
+            if (nm.networkState == "connected" && nm.currentStrength >= 50) 
+                wifiIndicator.source = "icons/network-wireless-signal-excellent-symbolic.svg"
+            else if (nm.networkState == "connected" && nm.currentStrength >= 45)
+                wifiIndicator.source = "icons/network-wireless-signal-ok-symbolic.svg"
+            else if (nm.networkState == "connected" && nm.currentStrength >= 30) 
+                wifiIndicator.source = "icons/network-wireless-signal-weak-symbolic.svg"
+            else
+                wifiIndicator.source = "icons/network-wireless-connected-symbolic.svg"
+        }
+    }
 
     SystemTrayIcon {
         visible: true
@@ -201,53 +229,12 @@ ApplicationWindow {
 
     Timer {
         id: scanTimer
-        interval: (root.state == "setting") ? 5000 : 30000
-        running: networkingModel.powered && ( root.state !== "locked" )
+        interval: (root.state == "setting") ? 6000 : 30000
+        running: nm.wifiEnable && ( root.state !== "locked" )
         repeat: true
         triggeredOnStart: true
         onTriggered: {
-            networkingModel.requestScan()
-        }
-    }
-
-    TechnologyModel {
-        id: networkingModel
-        name: "wifi"
-        property string networkName
-    }
-
-    NetworkManager { 
-        id: networkManager
-        onConnectedChanged: { if (connected) wifiIndicator.source = "icons/network-wireless-signal-excellent-symbolic.svg" }
-    }
-
-    UserAgent {
-        id: userAgent
-        onUserInputRequested: {
-            root.state = "popup"
-            scanTimer.running = false;
-            passwordInput.text = "";
-            console.log('user input requested: ' + networkingModel.networkName)
-            var view = { 
-                "fields": []
-            };
-            for (var key in fields) {
-                view.fields.push({
-                    "name": key,
-                    "id": key.toLowerCase(),
-                    "type": fields[key]["Type"],
-                    "requirement": fields[key]["Requirement"]
-                });
-                console.log(key + ":");
-                for (var inkey in fields[key]) {
-                    console.log("    " + inkey + ": " + fields[key][inkey]);
-                }
-            }
-        }
-        onErrorReported: {
-            console.log('Error: ' + error);
-            notification.showNotification('Error: ' + error);
-            wifiIndicator.source = "icons/network-wireless-signal-none-symbolic.svg";
+            nm.requestScan()
         }
     }
 
@@ -1023,7 +1010,7 @@ ApplicationWindow {
                         right: parent.right
                         bottom: parent.bottom
                     }
-                    model: networkingModel
+                    model: nm.networkModel
                     delegate: Rectangle {
                         height: 45
                         width: wifiListView.visible ? wifiListView.width : 0
@@ -1041,14 +1028,14 @@ ApplicationWindow {
                                 Text {
                                     font.family: fontAwesome.name 
                                     font.pixelSize: 12
-                                    text: (modelData.state == "online" || modelData.state == "ready") ? "\uf00c" : ""
+                                    text: (model.ssid === nm.currentSSID) ? "\uf00c" : ""
                                     color: "white"
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
                             }
                             Text {
-                                text: (modelData.name == "") ? "[Hidden Wifi]" : modelData.name
+                                text: (model.ssid == "") ? "[Hidden Wifi]" : model.ssid
                                 color: "white"
                                 elide: Text.ElideRight
                                 width: 230
@@ -1072,15 +1059,15 @@ ApplicationWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 Image { 
                                     width: 20; height: width; sourceSize.width: width*2; sourceSize.height: height*2;
-                                    source: (modelData.security[0] == "none") ? "" : "icons/network-wireless-encrypted-symbolic.svg"
+                                    source: model.encrypted ? "icons/network-wireless-encrypted-symbolic.svg" : ""
                                 }
                             }
                             Image {
                                 width: 20; height: width; sourceSize.width: width*2; sourceSize.height: height*2;
-                                source: if (modelData.strength >= 55 ) { return "icons/network-wireless-signal-excellent-symbolic.svg" }
-                                else if (modelData.strength >= 50 ) { return "icons/network-wireless-signal-good-symbolic.svg" }
-                                else if (modelData.strength >= 45 ) { return "icons/network-wireless-signal-ok-symbolic.svg" }
-                                else if (modelData.strength >= 30 ) { return "icons/network-wireless-signal-weak-symbolic.svg" }
+                                source: if (model.strength >= 55 ) { return "icons/network-wireless-signal-excellent-symbolic.svg" }
+                                else if (model.strength >= 50 ) { return "icons/network-wireless-signal-good-symbolic.svg" }
+                                else if (model.strength >= 45 ) { return "icons/network-wireless-signal-ok-symbolic.svg" }
+                                else if (model.strength >= 30 ) { return "icons/network-wireless-signal-weak-symbolic.svg" }
                                 else { return "icons/network-wireless-signal-none-symbolic.svg" }
                                 anchors.verticalCenter: parent.verticalCenter
                             }
@@ -1088,9 +1075,13 @@ ApplicationWindow {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (modelData.state == "idle" || modelData.state == "failure") {
-                                    networkingModel.networkName = modelData.name 
-                                    modelData.requestConnect()
+                                if (model.encrypted) { // ask for password
+                                    nm.networkName = model.ssid
+                                    root.state = "popup"
+                                    scanTimer.running = false;
+                                    passwordInput.text = "";
+                                } else {
+                                    nm.requestConnect(model.ssid, "")
                                 }
                             }
                         }
@@ -1154,12 +1145,7 @@ ApplicationWindow {
                     // wifi
                     Image {
                         id: wifiIndicator
-                        source: if (networkManager.state == "idle") { "icons/network-wireless-signal-none-symbolic.svg" } // no wifi connection
-                            else if (networkManager.connected && networkManager.connectedWifi.strength >= 55 ) { "icons/network-wireless-signal-excellent-symbolic.svg" } 
-                            else if (networkManager.connected && networkManager.connectedWifi.strength >= 50 ) { "icons/network-wireless-signal-good-symbolic.svg" } 
-                            else if (networkManager.connected && networkManager.connectedWifi.strength >= 45 ) { "icons/network-wireless-signal-ok-symbolic.svg" } 
-                            else if (networkManager.connected && networkManager.connectedWifi.strength >= 30 ) { "icons/network-wireless-signal-weak-symbolic.svg" } 
-                            else { "icons/network-wireless-connected-symbolic.svg" } 
+                        source: "icons/network-wireless-signal-none-symbolic.svg"
                         width: 34; height: width; sourceSize.width: width*2; sourceSize.height: height*2; 
                     }
 
@@ -1257,7 +1243,7 @@ ApplicationWindow {
                             topMargin: 15 
                             horizontalCenter: parent.horizontalCenter
                         }
-                        text: 'Enter the password for "' + networkingModel.networkName + '"'
+                        text: 'Enter the password for "' + nm.networkName + '"'
                         wrapMode: Text.Wrap
                         font.pointSize: xcbFontSizeAdjustment + 9
                     }
@@ -1308,7 +1294,7 @@ ApplicationWindow {
                                 anchors.fill: parent
                                 onClicked: {
                                     root.state = "normal";
-                                    userAgent.sendUserReply({});
+                                    nm.networkName = "";
                                     scanTimer.running = true;
                                 }
                             }
@@ -1329,8 +1315,7 @@ ApplicationWindow {
                                 onClicked: {
                                     root.state = "normal";
                                     scanTimer.running = true;
-                                    userAgent.sendUserReply({"Passphrase": passwordInput.text });
-                                    wifiIndicator.source = "icons/network-wireless-acquiring-symbolic.svg";
+                                    nm.requestConnect(nm.networkName, passwordInput.text);
                                 }
                             }
                         }
