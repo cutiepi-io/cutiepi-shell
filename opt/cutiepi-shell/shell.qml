@@ -207,7 +207,7 @@ ApplicationWindow {
             else if (nm.networkState == "connected")
                 wifiIndicator.source = "icons/network-wireless-signal-excellent-symbolic.svg"
             else 
-                wifiIndicator.source = "icons/network-wireless-connected-symbolic.svg"
+                wifiIndicator.source = "icons/network-wireless-signal-none-symbolic.svg"
         }
         onCurrentStrengthChanged: {
             if (nm.networkState == "connected" && nm.currentStrength >= 50) 
@@ -1076,10 +1076,14 @@ ApplicationWindow {
                             anchors.fill: parent
                             onClicked: {
                                 if (model.encrypted) { // ask for password
-                                    nm.networkName = model.ssid
-                                    root.state = "popup"
-                                    scanTimer.running = false;
-                                    passwordInput.text = "";
+                                    nm.checkIfSsidExistsInSettings(model.ssid, function(exists) {
+                                        if (!exists) {
+                                            nm.networkName = model.ssid
+                                            root.state = "popup"
+                                            scanTimer.running = false;
+                                            passwordInput.text = "";
+                                        }
+                                    });
                                 } else {
                                     nm.requestConnect(model.ssid, "")
                                 }

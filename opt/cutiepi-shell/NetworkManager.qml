@@ -109,6 +109,14 @@ Item {
     }
 
     DBusInterface {
+        id: settingsInterface
+        bus: DBus.SystemBus
+        service: "org.freedesktop.NetworkManager"
+        path: "/org/freedesktop/NetworkManager/Settings"
+        iface: "org.freedesktop.NetworkManager.Settings"
+    }
+
+    DBusInterface {
         id: nmStatusInterface
         bus: DBus.SystemBus
         service: "org.freedesktop.NetworkManager"
@@ -257,6 +265,50 @@ Item {
                 return;
             }
             console.log("Scan requested successfully");
+        });
+    }
+
+    function checkIfSsidExistsInSettings(ssid, callback) {
+        settingsInterface.call("ListConnections", [], function(connectionPaths, error) {
+            if (error) {
+                console.error("Failed to list connections: " + error);
+                callback(false);
+                return;
+            }
+            var found = false;
+            var count = connectionPaths.length;
+            if (count === 0) {
+                callback(false);
+                return;
+            }
+            for (var i = 0; i < connectionPaths.length; i++) {
+                settingsConnectionInterface.path = connectionPaths[i];
+                settingsConnectionInterface.call("GetSettings", [], function(result, error) {
+                    count--;
+                    if (error) {
+                        console.error("Failed to get settings: " + error);
+                    } else if ('802-11-wireless' in result && 'ssid' in result['802-11-wireless']) {
+                        var ssidInSettings = String.fromCharCode.apply(null, result["802-11-wireless"]["ssid"]);
+                        if (ssidInSettings === ssid) {
+                            found = true;
+                            nmStatusInterface.typedCall("ActivateConnection", [
+                                { 'type': 'o', 'value': settingsConnectionInterface.path }, 
+                                { 'type': 'o', 'value': deviceInterface.path }, 
+                                { 'type': 'o', 'value': "/" } 
+                            ], function(result, error) {
+                                if (error) {
+                                    console.error("Failed to activate connection: " + error);
+                                    return;
+                                }
+                                console.log("Connection activated successfully!");
+                            });
+                        }
+                    }
+                    if (count === 0) {
+                        callback(found);
+                    }
+                });
+            }
         });
     }
 
